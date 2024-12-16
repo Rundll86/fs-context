@@ -11,7 +11,7 @@ const loaderRule = [
     {
         test: /\.ts$/i,
         use: "ts-loader",
-        exclude: /\.d\.ts$/i
+        // exclude: /\.d\.ts$/i
     },
     {
         test: /\.(html|md)$/i,
@@ -44,6 +44,6 @@ const devServer = {
  * @type {import("webpack").Configuration}
  */
 const staticShow = {
-    stats: "errors-only"
+    stats: "normal"
 };
 module.exports = { loaderRule, alias, fileExtensions, devServer, staticShow };

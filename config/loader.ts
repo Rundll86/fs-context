@@ -1,7 +1,7 @@
 import { ExtensionLoadError } from "@framework/exceptions";
 type LoaderConfig = import("@framework/internal").LoaderConfig;
 const config: LoaderConfig = {
-    target: import("@samples/py/extension"),
+    target: import("@src/extension"),
     errorCatches: [Error, ExtensionLoadError],
     platform: ["TurboWarp"]
 };

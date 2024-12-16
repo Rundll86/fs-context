@@ -1,7 +1,7 @@
 import { ExtensionLoadError, UncognizedError } from "./exceptions";
 import { ArgumentPlain, BlockPlain, ExtensionPlain, GlobalResourceMachine, HexColorString, LoaderConfig, MenuPlain, ObjectInclude, PlatformSupported, Scratch, ScratchWaterBoxed } from "./internal";
-import { Extension } from "./structs";
 import loaderConfig from "@config/loader";
+import type { Extension } from "./structs";
 if (!window._FSContext) {
     // 这个判断有点史，优化下
     window._FSContext = {

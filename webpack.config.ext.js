@@ -11,11 +11,9 @@ module.exports = {
     entry: "@framework/entry.ts",
     output: {
         // filename: `${serverConfig.extension.output}.dist.js`,
-        filename:"[name].dist.js",
+        filename: "[name].dist.js",
         path: path.resolve(__dirname, `dist/${serverConfig.extension.output}`),
-        clean: true,
-        library: serverConfig.extension.output,
-        libraryTarget: "window"
+        clean: true
     },
     module: {
         rules: [
@@ -53,5 +51,11 @@ module.exports = {
         hot: false,
         liveReload: false,
         webSocketServer: false
+    },
+    optimization: {
+        splitChunks: {
+            chunks: "initial"
+        },
+        runtimeChunk: false
     }
 };
