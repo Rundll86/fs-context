@@ -14,7 +14,7 @@ export class ArgumentPart {
 export interface ArgumentDefine<T extends ValidArgumentName = ValidArgumentName> {
     name: T;
     value?: AcceptedArgType;
-    inputType?: InputType;
+    inputType?: InputType | string;
 }
 export type ValidArgumentName = `${"$" | "_"}${string}`;
 export type MethodFunction<T> = (this: Extension, args: T) => any;
@@ -179,7 +179,7 @@ export type ExtensionPlain = {
     getInfo: () => ExtensionInfo;
 } & {
     [key: string]: MethodFunction<any>;
-};
+}
 export interface ExtensionInfo {
     id: string;
     name: string;
@@ -188,4 +188,8 @@ export interface ExtensionInfo {
     color1: HexColorString;
     color2: HexColorString;
     color3: HexColorString;
+}
+export interface InputLoader {
+    format?: RegExp;
+    load: (data: string) => any;
 }

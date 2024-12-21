@@ -60,7 +60,6 @@ export default class FSIFrame extends Extension {
             dataStore.read("rootBase").child(iframe);
             dataStore.write("iframes", iframe);
             setInterval(() => {
-                console.log(this);
                 if (this.canvas) {
                     iframe
                         .style("width", `${this.canvas.clientWidth * iframe.data("ratio-x")}px`)

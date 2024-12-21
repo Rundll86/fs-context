@@ -1,7 +1,6 @@
 import { Extensions } from ".";
-import {
+import type {
     ArgumentDefine,
-    ArgumentPart,
     BlockTypePlain,
     ColorDefine,
     MenuItem,
@@ -14,8 +13,12 @@ import {
     ObjectInclude,
     VersionString,
     BlockConfigA,
-    MenuDefine
+    MenuDefine,
+    InputLoader,
+    InputType
 } from "./internal";
+import { ArgumentPart } from "./internal";
+import md5 from "md5";
 import { MenuParser, TextParser, Unnecessary } from "./tools";
 import { MissingError, OnlyInstanceWarn } from "./exceptions";
 export class Extension {
@@ -24,7 +27,7 @@ export class Extension {
     version: Version = new Version("1.0.0");
     allowSandboxed: boolean = true;
     requires: ObjectInclude<Version> = {};
-    blocks: Block<this & any>[] = [];
+    blocks: Block<any>[] = [];
     menus: Menu[] = [];
     description: string = "An example extension";
     collaborators: Collaborator[] = [];
@@ -34,6 +37,7 @@ export class Extension {
     };
     runtime?: Scratch;
     canvas?: HTMLCanvasElement;
+    loaders: ObjectInclude<InputLoader> = {};
     private static instance?: Extension;
     static get onlyInstance(): Extension {
         if (!this.instance) {
@@ -95,8 +99,8 @@ export class Block<O extends Extension = Extension> {
         const messages = Unnecessary.splitTextPart(text, _arguments.map(i => i.name));
         const args = Unnecessary.splitArgBoxPart(text, _arguments.map(i => i.name));
         for (let i = 0; i < messages.length; i++) {
-            textLoaded.push(messages[i].replaceAll("[", "[").replaceAll("]", "]"));
-            const current = _arguments.find(e => e.name === args[i]) as ArgumentDefine;
+            textLoaded.push(messages[i].replaceAll("[", "\\[").replaceAll("]", "\\]"));
+            const current = _arguments.find(e => e.name === args[i]);
             if (current) {
                 textLoaded.push(current);
             };
@@ -118,7 +122,7 @@ export class Block<O extends Extension = Extension> {
                     currentArgument.name,
                     "input",
                     currentArgument.value,
-                    currentArgument.inputType
+                    currentArgument.inputType as InputType
                 );
             }
             this.arguments.push(currentPart);

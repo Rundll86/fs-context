@@ -1,5 +1,19 @@
-import { ExtensionLoadError, UncognizedError } from "./exceptions";
-import { ArgumentPlain, BlockPlain, ExtensionPlain, GlobalResourceMachine, HexColorString, LoaderConfig, MenuPlain, ObjectInclude, PlatformSupported, Scratch, ScratchWaterBoxed } from "./internal";
+import { CastError, ExtensionLoadError, MissingError, UncognizedError } from "./exceptions";
+import type {
+    ArgumentPlain,
+    BlockPlain,
+    ExtensionPlain,
+    GlobalResourceMachine,
+    HexColorString,
+    LoaderConfig,
+    MenuPlain,
+    ObjectInclude,
+    PlatformSupported,
+    Scratch,
+    ScratchWaterBoxed
+} from "./internal";
+import { AcceptedInputType } from "./internal";
+import type { Extension } from "./structs";
 import loaderConfig from "@config/loader";
 import type { Extension } from "./structs";
 if (!window._FSContext) {
@@ -52,6 +66,11 @@ export namespace Extensions {
                         const currentArg: ArgumentPlain = {
                             type: Unnecessary.castInputType(arg.inputType),
                         };
+                        if (!AcceptedInputType.includes(arg.inputType)) {
+                            if (Object.keys(ext.loaders).includes(arg.inputType)) {
+                                currentArg.type = "string";
+                            };
+                        };
                         if (arg.inputType === "menu") {
                             currentArg.menu = arg.value as string;
                         } else {
@@ -89,9 +108,40 @@ export namespace Extensions {
                 }
             };
             ext.blocks.forEach(block => {
-                result[block.opcode] = Unnecessary.isAsyncFunction(block.method)
-                    ? async (arg: ObjectInclude) => JSON.stringify(await block.method.call(ext, arg))
-                    : (arg: ObjectInclude) => JSON.stringify(block.method.call(ext, arg));
+                function _processArg(arg: Record<string, any>) {
+                    argList.forEach(e => {
+                        if (e && e.loader) {
+                            if (!e.loader.format?.test(arg[e.name])) {
+                                console.error(`Invalid arg input: ${arg[e.name]}`);
+                            };
+                            arg[e.name] = e.loader.load(arg[e.name]);
+                        };
+                    });
+                };
+                const argList = block.arguments.map(arg => {
+                    return AcceptedInputType.includes(arg.inputType)
+                        ? undefined
+                        : {
+                            name: arg.content,
+                            loader: Object.keys(ext.loaders).includes(arg.inputType) ? ext.loaders[arg.inputType] : undefined
+                        };
+                }).filter(Boolean);
+                argList.forEach(arg => {
+                    if (arg && !arg.loader) {
+                        throw new MissingError(`Cannot find valid arg loader: ${arg.name}`);
+                    };
+                });
+                if (Unnecessary.isAsyncFunction(block.method)) {
+                    result[block.opcode] = async (arg: ObjectInclude) => {
+                        _processArg(arg);
+                        JSON.stringify(await block.method.call(ext, arg))
+                    };
+                } else {
+                    result[block.opcode] = (arg: ObjectInclude) => {
+                        _processArg(arg);
+                        JSON.stringify(block.method.call(ext, arg))
+                    };
+                };
             });
             return result;
         };
