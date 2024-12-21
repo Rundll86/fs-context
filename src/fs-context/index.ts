@@ -1,4 +1,4 @@
-import { CastError, ExtensionLoadError, MissingError, UncognizedError } from "./exceptions";
+import { ExtensionLoadError, MissingError, UncognizedError } from "./exceptions";
 import type {
     ArgumentPlain,
     BlockPlain,
@@ -15,9 +15,8 @@ import type {
 import { AcceptedInputType } from "./internal";
 import type { Extension } from "./structs";
 import loaderConfig from "@config/loader";
-import type { Extension } from "./structs";
 if (!window._FSContext) {
-    // 这个判断有点史，优化下
+    // 这个判断有点史，todo优化下
     window._FSContext = {
         EXTENSIONS: {},
         EXPORTED: {}
