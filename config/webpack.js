@@ -11,7 +11,7 @@ const loaderRule = [
     {
         test: /\.ts$/i,
         use: "ts-loader",
-        // exclude: /\.d\.ts$/i
+        exclude: /\.d\.ts$/i
     },
     {
         test: /\.(html|md)$/i,

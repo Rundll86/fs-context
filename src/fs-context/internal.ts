@@ -18,16 +18,16 @@ export interface ArgumentDefine<T extends ValidArgumentName = ValidArgumentName>
 }
 export type ValidArgumentName = `${"$" | "_"}${string}`;
 export type MethodFunction<T> = (this: Extension, args: T) => any;
-export interface Scratch {
+export type Scratch = {
     extensions: {
         register: (target: ExtensionPlain) => void;
         unsandboxed?: boolean;
-    },
+    } & { [key: string]: any };
     translate: ScratchTranslateFunction;
     renderer: {
         get canvas(): HTMLCanvasElement;
-    }
-}
+    } & { [key: string]: any };
+} & { [key: string]: any };
 export interface ScratchWaterBoxed extends Scratch {
     currentExtensionPlain: Extension | null;
     currentExtension: ExtensionPlain | null;
@@ -90,13 +90,13 @@ export const InputTypeCastConstructor = {
     "hat-paramater": String,
 }
 export interface GlobalResourceMachine {
-    EXTENSIONS: ObjectInclude<Version>;
+    EXTENSIONS: Record<string, Version>;
     EXPORTED: { [key: string]: DataStorer }
 }
 export interface ScratchTranslateFunction {
     language: LanguageSupported;
     (key: string): string;
-    setup: (data: ObjectInclude<LanguageStored>) => void;
+    setup: (data: Record<string, LanguageStored>) => void;
 }
 export interface StyleSetFunc<E extends HTMLElement> {
     <K extends keyof FilterWritableKeys<CSSStyleDeclaration>>
@@ -116,7 +116,7 @@ export interface DataSetFunc<E extends HTMLElement> {
 }
 export interface ElementContext<T extends HTMLElement = any> {
     result: T;
-    store: ObjectInclude<any>;
+    store: Record<string, any>;
     child: (target: ElementContext | HTMLElement) => ElementContext<T>;
     class: (...classes: string[]) => ElementContext<T>;
     attribute: AttributeSetFunc<T>;
@@ -135,11 +135,11 @@ export type FilterWritableKeys<T> = {
 }
 export type If<C extends boolean, T, F> = C extends true ? T : F;
 export type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends (<T>() => T extends Y ? 1 : 2) ? true : false;
-export type ObjectInclude<T = any, K extends string | number | symbol = string> = {
-    [key: string]: T;
-} & {
-    [C in K]: T;
-}
+// export type ObjectInclude<T = any, K extends string | number | symbol = string> = {
+//     [key: string]: T;
+// } & {
+//     [C in K]: T;
+// }
 export type VersionString = `${number}.${number}.${number}`;
 export type FilterKey<T, K> = {
     [P in keyof T as P extends K ? never : P]: never;
@@ -171,7 +171,7 @@ export interface ArgumentPlain {
 }
 export interface BlockPlain {
     opcode: string;
-    arguments: ObjectInclude<ArgumentPlain>;
+    arguments: Record<string, ArgumentPlain>;
     text: string;
     blockType: BlockTypePlain;
 }
@@ -184,12 +184,13 @@ export interface ExtensionInfo {
     id: string;
     name: string;
     blocks: BlockPlain[];
-    menus: ObjectInclude<MenuPlain>;
+    menus: Record<string, MenuPlain>;
     color1: HexColorString;
     color2: HexColorString;
     color3: HexColorString;
 }
 export interface InputLoader {
     format?: RegExp;
+    defaultValue?: any;
     load: (data: string) => any;
 }

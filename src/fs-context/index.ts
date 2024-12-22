@@ -5,9 +5,7 @@ import type {
     ExtensionPlain,
     GlobalResourceMachine,
     HexColorString,
-    LoaderConfig,
     MenuPlain,
-    ObjectInclude,
     PlatformSupported,
     Scratch,
     ScratchWaterBoxed
@@ -15,8 +13,8 @@ import type {
 import { AcceptedInputType } from "./internal";
 import type { Extension } from "./structs";
 import loaderConfig from "@config/loader";
+import serverConfig from "@config/server";
 if (!window._FSContext) {
-    // 这个判断有点史，todo优化下
     window._FSContext = {
         EXTENSIONS: {},
         EXPORTED: {}
@@ -53,7 +51,7 @@ export namespace Extensions {
             });
             const blocks: BlockPlain[] = [];
             for (const block of ext.blocks) {
-                const args: ObjectInclude<ArgumentPlain> = {};
+                const args: Record<string, ArgumentPlain> = {};
                 const currentBlock: BlockPlain = {
                     opcode: block.opcode,
                     blockType: block.type,
@@ -80,7 +78,7 @@ export namespace Extensions {
                 };
                 blocks.push(currentBlock);
             };
-            const menus: ObjectInclude<MenuPlain> = {};
+            const menus: Record<string, MenuPlain> = {};
             for (const menu of ext.menus) {
                 menus[menu.name] = {
                     acceptReporters: menu.acceptReporters,
@@ -112,8 +110,16 @@ export namespace Extensions {
                         if (e && e.loader) {
                             if (!e.loader.format?.test(arg[e.name])) {
                                 console.error(`Invalid arg input: ${arg[e.name]}`);
+                                arg[e.name] = e.loader.defaultValue ?? null;
+                            } else {
+                                try {
+                                    arg[e.name] = e.loader.load(arg[e.name]);
+                                } catch (err) {
+                                    console.error(`Error while loading arg: ${e}`);
+                                    console.error(err);
+                                    arg[e.name] = e.loader.defaultValue ?? null;
+                                };
                             };
-                            arg[e.name] = e.loader.load(arg[e.name]);
                         };
                     });
                 };
@@ -131,23 +137,25 @@ export namespace Extensions {
                     };
                 });
                 if (Unnecessary.isAsyncFunction(block.method)) {
-                    result[block.opcode] = async (arg: ObjectInclude) => {
+                    result[block.opcode] = async (arg: Record<string, any>) => {
                         _processArg(arg);
                         JSON.stringify(await block.method.call(ext, arg))
                     };
                 } else {
-                    result[block.opcode] = (arg: ObjectInclude) => {
+                    result[block.opcode] = (arg: Record<string, any>) => {
                         _processArg(arg);
                         JSON.stringify(block.method.call(ext, arg))
                     };
                 };
             });
+            ext.generated = result;
             return result;
         };
-        return ExtensionConstructor as unknown as new (runtime?: Scratch) => ExtensionPlain;
+        return ExtensionConstructor as any;
     }
-    export const config: ObjectInclude<LoaderConfig, "loader"> = {
-        loader: loaderConfig
+    export const config: Record<string, any> = {
+        loader: loaderConfig,
+        server: serverConfig
     }
     export function isInWaterBoxed() {
         return window.ScratchWaterBoxed !== undefined;

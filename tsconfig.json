@@ -9,6 +9,8 @@
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "moduleResolution": "bundler",
+    "allowJs": true,
+    "checkJs": true,
     "paths": {
       "@framework/*": [
         "./src/fs-context/*"

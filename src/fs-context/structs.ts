@@ -10,15 +10,14 @@ import type {
     BlockConfigB,
     ExtractField,
     Scratch,
-    ObjectInclude,
     VersionString,
     BlockConfigA,
     MenuDefine,
     InputLoader,
-    InputType
+    InputType,
+    ExtensionPlain
 } from "./internal";
 import { ArgumentPart } from "./internal";
-import md5 from "md5";
 import { MenuParser, TextParser, Unnecessary } from "./tools";
 import { MissingError, OnlyInstanceWarn } from "./exceptions";
 export class Extension {
@@ -26,7 +25,7 @@ export class Extension {
     displayName: string = "Example extension";
     version: Version = new Version("1.0.0");
     allowSandboxed: boolean = true;
-    requires: ObjectInclude<Version> = {};
+    requires: Record<string, Version> = {};
     blocks: Block<any>[] = [];
     menus: Menu[] = [];
     description: string = "An example extension";
@@ -37,7 +36,8 @@ export class Extension {
     };
     runtime?: Scratch;
     canvas?: HTMLCanvasElement;
-    loaders: ObjectInclude<InputLoader> = {};
+    loaders: Record<string, InputLoader> = {};
+    generated?: ExtensionPlain;
     private static instance?: Extension;
     static get onlyInstance(): Extension {
         if (!this.instance) {
@@ -58,6 +58,26 @@ export class Extension {
             };
         };
         return this.colors;
+    };
+    callLoader(name: string[], src: string): any {
+        const loader = this.loaders[name[0]];
+        if (loader) {
+            return loader.load(src);
+        } else {
+            throw new MissingError(`Loader "${name[0]}" is not found.`);
+        };
+    };
+    callBlock(opcode: string, arg: Record<string, any>) {
+        if (this.generated) {
+            const block = this.generated.getInfo().blocks.find(i => i.opcode === opcode);
+            if (block) {
+                this.generated[block.opcode].call(this, arg);
+            } else {
+                throw new MissingError(`Block "${opcode}" is not found.`);
+            };
+        } else {
+            throw new MissingError("Extension is not generated and constructed.");
+        };
     };
     init(runtime?: Scratch): any {
         this.runtime = runtime;
