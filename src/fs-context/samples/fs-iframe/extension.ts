@@ -136,7 +136,7 @@ export default class FSIFrame extends Extension {
         }, function remove(arg) {
             document.getElementById(`fsiframe-${arg.$name}`)?.remove();
         })
-    ]
+    ];
     init(runtime: Scratch) {
         runtime.renderer.canvas.parentElement?.appendChild(
             dataStore.read("rootBase").result
@@ -148,7 +148,7 @@ function parsePos(text: string): Position {
     return {
         x: Number(arr[0]),
         y: Number(arr[1])
-    }
+    };
 }
 const dataStore = GlobalContext.createDataStore(FSIFrame, {
     iframes: [] as ElementContext<HTMLIFrameElement>[],

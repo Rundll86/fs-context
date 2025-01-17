@@ -1,34 +1,48 @@
 <template>
     <div class="block" :style="{ backgroundColor: colorBlock, borderColor: colorInputer }">
         <button class="oval" :style="{ backgroundColor: colorMenu }" @click="runMethod($el, opcode)">Run</button>
-        <button class="oval" :style="{ backgroundColor: colorMenu }" @click="view(opcode, type, unparsedText)">View</button>
+        <button class="oval" :style="{ backgroundColor: colorMenu }"
+            @click="view(opcode, type, unparsedText)">View</button>
         <button class="oval" :style="{ backgroundColor: colorMenu }" @click="alerter(calcArgs($el))">Arg</button>
         <slot></slot>
     </div>
 </template>
-<script setup>
-function calcArgs(ele) {
-    let result = {};
+<script setup lang="ts">
+function calcArgs(ele: HTMLDivElement) {
+    let result: Record<string, any> = {};
     ele.querySelectorAll('span.texts').forEach(el => {
         if ([...el.classList].includes("input")) {
-            result[el.querySelector("span").innerText.slice(0, -1).split(" ").slice(1).join(" ")] = el.querySelector(".inputer").value;
+            result[
+                (el.querySelector("span") as HTMLSpanElement)
+                    .innerText
+                    .slice(0, -1)
+                    .split(" ")
+                    .slice(1)
+                    .join(" ")
+            ] = (el.querySelector(".inputer") as HTMLInputElement).value;
         };
     });
     return result;
 };
-function alerter(sth) {
+function alerter(sth: any) {
     window.alert(JSON.stringify(sth));
 };
-function runMethod(ele, opcode) {
-    console.log(window.ScratchWaterBoxed.currentExtension[opcode](calcArgs(ele)));
+function runMethod(ele: HTMLDivElement, opcode: string) {
+    if (
+        window.ScratchWaterBoxed
+        && window.ScratchWaterBoxed.currentExtension
+        && window.ScratchWaterBoxed.currentExtensionPlain
+    ) {
+        console.log(window.ScratchWaterBoxed.currentExtension[opcode].call(window.ScratchWaterBoxed.currentExtensionPlain, calcArgs(ele)))
+    };
 };
-function view(opcode, type, unparsedText) {
+function view(opcode: string, type: string, unparsedText: string) {
     alert(JSON.stringify({
         opcode, type, unparsedText
     }, null, 4));
 };
 </script>
-<script>
+<script lang="ts">
 export default {
     props: {
         colorBlock: {
@@ -56,7 +70,7 @@ export default {
             default: "Unparsed Text"
         }
     }
-}
+};
 </script>
 <style scoped>
 .block {

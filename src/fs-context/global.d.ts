@@ -1,15 +1,36 @@
-declare module "*.vue";
-declare module "*.html";
-declare module "*.md";
-declare module "*.css";
+type Scratch = import("./internal").Scratch;
+type ScratchWaterBoxed = import("./internal").ScratchWaterBoxed;
+type ExtensionPlain = import("./internal").ExtensionPlain;
+type GlobalResourceMachine = import("./internal").GlobalResourceMachine;
+type BlockPlain = import("./internal").BlockPlain;
+declare module "*.vue" {
+    const content: import("vue").Component;
+    export default content;
+}
+declare module "*.html" {
+    const content: string;
+    export default content;
+}
+declare module "*.md" {
+    const content: string;
+    export default content;
+}
+declare module "*.css" {
+    const content: Record<string, never>;
+    export default content;
+}
+declare module "*.svg" {
+    const content: string;
+    export default content;
+}
 declare interface Window {
-    ScratchWaterBoxed?: import("./internal").ScratchWaterBoxed;
-    Scratch?: import("./internal").Scratch;
+    ScratchWaterBoxed?: ScratchWaterBoxed;
+    Scratch?: Scratch;
     __VUE_OPTIONS_API__: boolean;
     __VUE_PROD_DEVTOOLS__: boolean;
     __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: boolean;
     tempExt?: {
-        Extension: new (runtime: import("./internal").Scratch) => import("./internal").ExtensionPlain,
+        Extension: new (runtime: Scratch) => ExtensionPlain,
         info: {
             extensionId: string,
             name: string,
@@ -19,6 +40,7 @@ declare interface Window {
             collaboratorList: import("./structs").Collaborator[]
         }
     };
-    _FSContext?: import("./internal").GlobalResourceMachine;
+    _FSContext?: GlobalResourceMachine;
     callErrorOverlay?: (error: Error) => void;
+    ScratchBlocks?: BlockPlain[];
 }

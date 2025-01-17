@@ -1,5 +1,4 @@
 import { createApp } from "vue";
-import "./base.css";
 import WaterBox from "./componets/WaterBox.vue";
 import config from "@config/loader";
 window.__VUE_OPTIONS_API__ = true;

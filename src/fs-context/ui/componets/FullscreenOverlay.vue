@@ -51,24 +51,23 @@
     width: 10px;
 }
 </style>
-<script setup>
-import "../../global.d";
+<script setup lang="ts">
 import WButton from "./WButton.vue";
 </script>
-<script>
+<script lang="ts">
 export default {
     mounted() {
         window.callErrorOverlay = (e) => {
             this.open = true;
-            this.info = e.stack.split("\n");
+            this.info = e.stack?.split("\n") || [];
             console.log(e);
         };
     },
     data() {
         return {
             open: false,
-            info: ""
-        }
+            info: [] as string[]
+        };
     }
-}
+};
 </script>

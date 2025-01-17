@@ -69,7 +69,7 @@ export default class FallingAnchors extends Extension {
                     this.element
                         .style("left", `${this.bed.horizontal}%`)
                         .style("top", `${this.bed.vertical}%`)
-                        .style("transform", `translate(${this.anchor.horizontal}%, ${this.anchor.vertical}%)`)
+                        .style("transform", `translate(${this.anchor.horizontal}%, ${this.anchor.vertical}%)`);
                     if (this.size === "auto") {
                         this.element.style("width", "auto").style("height", "auto");
                     } else {

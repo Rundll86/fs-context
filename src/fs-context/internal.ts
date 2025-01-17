@@ -80,7 +80,7 @@ export type LanguageStored = { [key: string]: string; };
 export type ArgumentPartType = "text" | "input";
 export type InputType = "string" | "number" | "bool" | "menu" | "angle" | "color" | "hat-paramater";
 export const AcceptedInputType = ["string", "number", "bool", "menu", "angle", "color", "hat-paramater"];
-export const InputTypeCastConstructor = {
+export const InputTypeCastConstructor: Record<string, any> = {
     string: String,
     number: Number,
     bool: Boolean,
@@ -88,7 +88,7 @@ export const InputTypeCastConstructor = {
     angle: Number,
     color: String,
     "hat-paramater": String,
-}
+};
 export interface GlobalResourceMachine {
     EXTENSIONS: Record<string, Version>;
     EXPORTED: { [key: string]: DataStorer }
@@ -177,8 +177,10 @@ export interface BlockPlain {
 }
 export type ExtensionPlain = {
     getInfo: () => ExtensionInfo;
+    runtime?: Scratch;
 } & {
     [key: string]: MethodFunction<any>;
+    [key: symbol]: any;
 }
 export interface ExtensionInfo {
     id: string;

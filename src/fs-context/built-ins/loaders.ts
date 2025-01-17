@@ -1,7 +1,7 @@
 import type { InputLoader } from "@framework/internal";
 export const vector2: InputLoader = {
     load(src) {
-        let splited = src.split(" ");
+        const splited = src.split(" ");
         if (splited.length < 2) splited.push("");
         let x = Number(splited[0]);
         if (Number.isNaN(x)) { x = 0; };
@@ -13,7 +13,7 @@ export const vector2: InputLoader = {
 };
 export const vector3: InputLoader = {
     load(src) {
-        let splited = src.split(" ");
+        const splited = src.split(" ");
         if (splited.length < 3) splited.push("", "");
         let x = Number(splited[0]);
         if (Number.isNaN(x)) { x = 0; };
@@ -28,13 +28,16 @@ export const vector3: InputLoader = {
 export const json: InputLoader = {
     load(src) {
         return JSON.parse(src);
-    },
-    format: /\[(.*)\]|\{(.*)\}|"(.*)"/
+    }
 };
 export const html: InputLoader = {
     load(src) {
-        let parser = new DOMParser();
+        const parser = new DOMParser();
         return parser.parseFromString(src, "text/html");
-    },
-    format: /\<(.*)\>/
+    }
+};
+export const textArray: InputLoader = {
+    load(src) {
+        return src.split(/[, \n;|]/).filter(Boolean);
+    }
 };

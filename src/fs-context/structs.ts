@@ -57,7 +57,7 @@ export class Extension {
                 throw new MissingError(`FSExtension "${this.id}" can auto derive colors but have no theme color.`);
             };
         };
-        return this.colors;
+        return this.colors as Required<ColorDefine>;
     };
     callLoader(name: string[], src: string): any {
         const loader = this.loaders[name[0]];

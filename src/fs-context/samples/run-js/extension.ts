@@ -30,7 +30,7 @@ export default class FallingAnchors extends Extension {
         }
     }
     @BlockType.Reporter(translator.load("getStack"))
-    getStack(arg: Record<string, any>) {
+    getStack() {
         return dataStore.read("stack");
     }
 };

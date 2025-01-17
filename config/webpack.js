@@ -10,19 +10,38 @@ const loaderRule = [
     },
     {
         test: /\.ts$/i,
-        use: "ts-loader",
-        exclude: /\.d\.ts$/i
+        use: {
+            loader: "ts-loader",
+            options: {
+                appendTsSuffixTo: [/\.vue$/],
+                transpileOnly: true
+            }
+        },
+        exclude: /\.d\.ts$/i,
     },
     {
         test: /\.(html|md)$/i,
         use: "raw-loader"
+    },
+    {
+        test: /\.svg$/i,
+        use: [
+            {
+                loader: "url-loader",
+                options: {
+                    limit: 8192,
+                    name: "[name].[hash:8].[ext]"
+                }
+            }
+        ]
     }
 ];
 const alias = {
     "@framework": path.resolve(process.cwd(), "src/fs-context"),
     "@src": path.resolve(process.cwd(), "src"),
     "@config": path.resolve(process.cwd(), "config"),
-    "@samples": path.resolve(process.cwd(), "src/fs-context/samples")
+    "@samples": path.resolve(process.cwd(), "src/fs-context/samples"),
+    "@componets": path.resolve(process.cwd(), "src/fs-context/ui/componets"),
 };
 const fileExtensions = [".ts", ".js"];
 /**
@@ -38,12 +57,12 @@ const devServer = {
     compress: true,
     hot: true,
     liveReload: true,
-    setupExitSignals:false
+    setupExitSignals: false
 };
 /**
  * @type {import("webpack").Configuration}
  */
 const staticShow = {
-    stats: "normal"
+    stats: "errors-only"
 };
 module.exports = { loaderRule, alias, fileExtensions, devServer, staticShow };

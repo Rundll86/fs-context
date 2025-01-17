@@ -8,9 +8,14 @@
     "outDir": "generated",
     "experimentalDecorators": true,
     "resolveJsonModule": true,
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "allowJs": true,
     "checkJs": true,
+    "isolatedModules": true,
+    "types": [
+      "webpack",
+      "vue"
+    ],
     "paths": {
       "@framework/*": [
         "./src/fs-context/*"
@@ -23,12 +28,16 @@
       ],
       "@samples/*": [
         "./src/fs-context/samples/*"
-      ]
+      ],
+      "@components/*": [
+        "./src/fs-context/ui/components/*"
+      ],
     },
     "baseUrl": "."
   },
   "include": [
     "./src/**/*.ts",
-    "./config/**/*.ts"
+    "./config/**/*.ts",
+    "./src/**/*.vue"
   ]
 }

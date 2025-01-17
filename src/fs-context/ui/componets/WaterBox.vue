@@ -17,7 +17,7 @@
                 <ScratchBlock v-for="block in blocks" :key="block.opcode" :colorBlock="colorBlock"
                     :colorInputer="colorInputer" :colorMenu="colorMenu" :opcode="block.opcode" :type="block.type"
                     :unparsedText="block.text">
-                    <span v-for="arg in block.arguments" :key="arg"
+                    <span v-for="arg in block.arguments" :key="arg.content"
                         :class="{ 'texts': true, 'input': arg.type === 'input' }">
                         <span v-if="arg.type === 'text'" class="text">{{ arg.content }}</span>
                         <span v-if="arg.type === 'input'" class="label">({{ arg.inputType }}) {{ arg.content }}:</span>
@@ -26,9 +26,9 @@
                         <select v-if="arg.type === 'input' && arg.inputType === 'menu'" class="inputer select" :style="{
                             backgroundColor: colorInputer,
                             borderColor: colorMenu
-                        }" :value="findMenu(arg.value).items[0].value">
-                            <option v-for="option in findMenu(arg.value).items"
-                                :value="option.value ? option.value : option.name" :key="option">{{ option.name }}
+                        }" :value="findMenu(arg.value as string)?.items[0].value">
+                            <option v-for="option in findMenu(arg.value as string)?.items"
+                                :value="option.value ? option.value : option.name" :key="option.name">{{ option.name }}
                             </option>
                         </select>
                     </span>
@@ -38,8 +38,8 @@
     </div>
     <FullscreenOverlay />
 </template>
-<script>
-console.log("WaterBox loading");
+<script lang="ts">
+import { Block, Menu } from "../../structs";
 export default {
     data() {
         return {
@@ -47,30 +47,31 @@ export default {
             colorBlock: "#000000",
             colorInputer: "#000000",
             colorMenu: "#000000",
-            blocks: [],
-            menus: [],
+            blocks: [] as Block[],
+            menus: [] as Menu[],
             extName: "",
             extId: ""
-        }
+        };
     },
     methods: {
-        findMenu(id) {
+        findMenu(id: string | Menu) {
             return id instanceof Menu ? id : this.menus.find(m => m.name === id);
         },
         reloadExtension() {
             this.extensionLoaded = false;
             import("../../entry").then(async (e) => {
                 await e.result;
-                let ext = window.ScratchWaterBoxed.currentExtensionPlain;
-                ext.calcColor();
-                this.colorBlock = ext.colors.block;
-                this.colorInputer = ext.colors.inputer;
-                this.colorMenu = ext.colors.menu;
+                let ext = window.ScratchWaterBoxed?.currentExtensionPlain;
+                if (!ext) { return; };
+                const colors = ext.calcColor();
+                this.colorBlock = colors.block;
+                this.colorInputer = colors.inputer;
+                this.colorMenu = colors.menu;
                 this.blocks = ext.blocks;
                 this.menus = ext.menus;
                 this.extName = ext.displayName;
                 this.extId = ext.id;
-                document.querySelectorAll("input").forEach(i => this.autoWidthInput({ target: i }))
+                document.querySelectorAll("input").forEach(i => this.autoWidthInput({ target: i }));
                 setTimeout(() => {
                     this.extensionLoaded = true;
                 }, 100);
@@ -86,8 +87,9 @@ export default {
                 alert("已尝试自动复制，但复制失败，请手动选中复制：\n" + url + `\n${e}`);
             }
         },
-        autoWidthInput(e) {
-            let { target } = e;
+        autoWidthInput(e: { target: EventTarget | null }) {
+            const target = e.target as HTMLInputElement;
+            if (!target) { return; };
             let tempSpan = document.createElement('span');
             tempSpan.style.visibility = 'hidden';
             tempSpan.style.whiteSpace = 'pre';
@@ -101,14 +103,12 @@ export default {
     mounted() {
         this.reloadExtension();
     }
-}
+};
 </script>
-<script setup>
-import "../../global.d";
+<script setup lang="ts">
 import ScratchBlock from "./ScratchBlock.vue";
 import ScratchStage from "./ScratchStage.vue";
 import serverConfig from "../../../../config/server";
-import { Menu } from "../../structs";
 import FullscreenOverlay from "./FullscreenOverlay.vue";
 import WButton from "./WButton.vue";
 </script>
@@ -184,5 +184,13 @@ input {
     background-color: rgb(255, 255, 255, 0.25);
     border-radius: 5px;
     padding: 0 5px;
+}
+</style>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    border: none;
+    outline: none;
 }
 </style>

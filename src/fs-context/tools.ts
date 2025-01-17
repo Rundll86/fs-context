@@ -146,14 +146,14 @@ export namespace Unnecessary {
     export function darken(color: HexColorString, level: number): HexColorString {
         const rgb = hexToRgb(color);
         for (let i = 0; i < 3; i++) {
-            rgb[i] = Math.floor(rgb[i] - (rgb[i] * level))
+            rgb[i] = Math.floor(rgb[i] - (rgb[i] * level));
         }
         return `#${rgb.map((i) => i.toString(16).padStart(2, "0")).join('')}`;
     }
     export function lighten(color: HexColorString, level: number): HexColorString {
         const rgb = hexToRgb(color);
         for (let i = 0; i < 3; i++) {
-            rgb[i] = Math.floor(rgb[i] + (255 - rgb[i]) * level)
+            rgb[i] = Math.floor(rgb[i] + (255 - rgb[i]) * level);
         }
         return `#${rgb.map((i) => i.toString(16).padStart(2, "0")).join('')}`;
     }
@@ -269,9 +269,6 @@ export namespace TextParser {
         if (hasDefaultValue(arg)) {
             result = result.split("=", 1)[0];
         };
-        if (!AcceptedInputType.includes(result)) {
-            throw new CastError(`Invalid input type: ${result}`);
-        };
         return result as InputType;
     }
     export function parseDefaultValue(arg: string): any | undefined {
@@ -279,7 +276,7 @@ export namespace TextParser {
             return;
         };
         const result = arg.split("=").pop();
-        return InputTypeCastConstructor[parseType(arg)](result);
+        return InputTypeCastConstructor[parseType(arg)]?.call(window, result) ?? result;
     }
     export function parseName(arg: string): string {
         return arg.split(/[:=]/)[0];

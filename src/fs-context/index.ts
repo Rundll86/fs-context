@@ -28,14 +28,14 @@ export namespace Extensions {
         const context = getFSContext();
         function ExtensionConstructor(this: ExtensionPlain, runtime?: Scratch): ExtensionPlain {
             if (!runtime?.extensions?.unsandboxed && !ext.allowSandboxed) {
-                throw new ExtensionLoadError(`FSExtension "${ext.id}" must be supported unsandboxed.`)
+                throw new ExtensionLoadError(`FSExtension "${ext.id}" must be supported unsandboxed.`);
             };
             for (const i in ext.requires) {
                 if (!Object.keys(context.EXTENSIONS).includes(i)) {
-                    throw new ExtensionLoadError(`FSExtension "${ext.id}" requires ${i} to be loaded.`)
+                    throw new ExtensionLoadError(`FSExtension "${ext.id}" requires ${i} to be loaded.`);
                 }
                 if (Version.compare(context.EXTENSIONS[i], ext.requires[i]) === ext.requires[i]) {
-                    throw new ExtensionLoadError(`FSExtension "${ext.id}" requires ${i} to be at least ${ext.requires[i]}.`)
+                    throw new ExtensionLoadError(`FSExtension "${ext.id}" requires ${i} to be at least ${ext.requires[i]}.`);
                 };
             };
             ext.init(runtime);
@@ -101,24 +101,24 @@ export namespace Extensions {
                         color1: ext.colors.block as HexColorString,
                         color2: ext.colors.inputer as HexColorString,
                         color3: ext.colors.menu as HexColorString
-                    }
+                    };
                 }
             };
             ext.blocks.forEach(block => {
                 function _processArg(arg: Record<string, any>) {
                     argList.forEach(e => {
                         if (e && e.loader) {
-                            if (!e.loader.format?.test(arg[e.name])) {
+                            if (e.loader.format && !e.loader.format.test(arg[e.name])) {
                                 console.error(`Invalid arg input: ${arg[e.name]}`);
                                 arg[e.name] = e.loader.defaultValue ?? null;
-                            } else {
-                                try {
-                                    arg[e.name] = e.loader.load(arg[e.name]);
-                                } catch (err) {
-                                    console.error(`Error while loading arg: ${e}`);
-                                    console.error(err);
-                                    arg[e.name] = e.loader.defaultValue ?? null;
-                                };
+                                return;
+                            };
+                            try {
+                                arg[e.name] = e.loader.load(arg[e.name]);
+                            } catch (err) {
+                                console.error(`Error while loading arg: ${e}`);
+                                console.error(err);
+                                arg[e.name] = e.loader.defaultValue ?? null;
                             };
                         };
                     });
@@ -139,12 +139,12 @@ export namespace Extensions {
                 if (Unnecessary.isAsyncFunction(block.method)) {
                     result[block.opcode] = async (arg: Record<string, any>) => {
                         _processArg(arg);
-                        JSON.stringify(await block.method.call(ext, arg))
+                        return JSON.stringify(await block.method.call(ext, arg));
                     };
                 } else {
                     result[block.opcode] = (arg: Record<string, any>) => {
                         _processArg(arg);
-                        JSON.stringify(block.method.call(ext, arg))
+                        return JSON.stringify(block.method.call(ext, arg));
                     };
                 };
             });
@@ -156,7 +156,7 @@ export namespace Extensions {
     export const config: Record<string, any> = {
         loader: loaderConfig,
         server: serverConfig
-    }
+    };
     export function isInWaterBoxed() {
         return window.ScratchWaterBoxed !== undefined;
     }
@@ -218,6 +218,6 @@ export namespace Extensions {
                 console.dir(objectGenerated.getInfo());
                 return this;
             }
-        }
+        };
     }
 }

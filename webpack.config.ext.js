@@ -3,6 +3,7 @@ const path = require("path");
 const serverConfig = require("./config/server");
 const commonConfig = require("./config/webpack");
 const FriendlyErrorsWebpackPlugin = require("friendly-errors-webpack-plugin");
+const webpack = require("webpack");
 /**
  * @type {import('webpack').Configuration}
  */
@@ -10,8 +11,7 @@ module.exports = {
     ...commonConfig.staticShow,
     entry: "@framework/entry.ts",
     output: {
-        // filename: `${serverConfig.extension.output}.dist.js`,
-        filename: "[name].dist.js",
+        filename: `${serverConfig.extension.output}.dist.js`,
         path: path.resolve(__dirname, `dist/${serverConfig.extension.output}`),
         clean: true
     },
@@ -40,7 +40,8 @@ module.exports = {
                 ]
             },
             clearConsole: true
-        })
+        }),
+        new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 })
     ],
     devServer: {
         ...commonConfig.devServer,
@@ -53,9 +54,10 @@ module.exports = {
         webSocketServer: false
     },
     optimization: {
-        splitChunks: {
-            chunks: "initial"
-        },
-        runtimeChunk: false
+        splitChunks: false,
+        runtimeChunk: false,
+        minimize: true,
+        concatenateModules: true,
+        removeEmptyChunks: true,
     }
 };

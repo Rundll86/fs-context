@@ -1,8 +1,10 @@
 import * as exceptions from "@framework/exceptions";
-import { ColorDefine, InputLoader } from "@framework/internal";
-import { Block, Collaborator, Extension, Menu, Translator, Version } from "@framework/structs";
+import type { ColorDefine, InputLoader, AnyArg } from "@framework/internal";
+import { Block, Collaborator, Extension, Menu, Translator, Version, BlockType } from "@framework/structs";
 import { GlobalContext, Unnecessary } from "@framework/tools";
 import { html, json, vector2, vector3 } from "@framework/built-ins/loaders";
+import leftArrow from "@framework/icons/leftArrow.svg";
+console.log(leftArrow);
 const translator = Translator.create("zh-cn", {
     name: "我的拓展",
     des: "这是我的第一个拓展"
@@ -58,7 +60,7 @@ export default class MyExtension extends Extension {
             "Cabbage白菜"
         ]),
         new Menu("sauces", "番茄酱=ketchup,蛋黄酱=mayonnaise,mushroom,辣椒酱=hot sauce")
-    ]
+    ];
     description = translator.load("des");
     collaborators = [
         new Collaborator("FallingShrimp", "https://f-shrimp.solariix.com")
@@ -67,20 +69,20 @@ export default class MyExtension extends Extension {
         theme: "#ff0000"
     };
     autoDeriveColors = true;
-    // @BlockType.Command("alert[sth:string=hello]with suffix[suffix:menu=suffixes]")
-    // alertTest(args: AnyArg) {
-    //     alert(args.sth + " " + args.suffix);
-    //     dataStore.write("alertedSth", args.sth.toString());
-    //     dataStore.write("lastSuffix", args.suffix.toString());
-    // };
-    // @BlockType.Reporter("getAlertedSth")
-    // getAlertedSth() {
-    //     return dataStore.read("alertedSth");
-    // };
-    // @BlockType.Reporter("getLastSuffix")
-    // getLastSuffix() {
-    //     return dataStore.read("lastSuffix");
-    // };
+    @BlockType.Command("alert[sth:string=hello]with suffix[suffix:menu=suffixes]")
+    alertTest(args: AnyArg) {
+        alert(args.sth + " " + args.suffix);
+        dataStore.write("alertedSth", args.sth.toString());
+        dataStore.write("lastSuffix", args.suffix.toString());
+    };
+    @BlockType.Reporter("getAlertedSth")
+    getAlertedSth() {
+        return dataStore.read("alertedSth");
+    };
+    @BlockType.Reporter("getLastSuffix")
+    getLastSuffix() {
+        return dataStore.read("lastSuffix");
+    };
 };
 const dataStore = GlobalContext.createDataStore(MyExtension, {
     alertedSth: [] as string[],
