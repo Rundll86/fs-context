@@ -28,26 +28,6 @@ export default class UseOOPInGandi extends Extension {
     id = "useoopingandi";
     displayName = "Use OOP in Gandi";
     loaders: Record<string, InputLoader> = { textArray, json };
-    blocks: Block<UseOOPInGandi>[] = [
-        Block.create("Text array $array", {
-            type: "command",
-            arguments: [
-                {
-                    name: "$array",
-                    inputType: "json", //name of loader
-                    rest: {
-                        defaultValues: ["Hello", "World"],
-                        joinCh: ","
-                    }
-                }
-            ]
-        }, function textArray(args) {
-            console.log(args);
-        })
-    ];
-    init(runtime?: Scratch) {
-        console.log(runtime);
-    }
     @BlockType.Command("Create prototype [name=Wolf] with attrs [attrs:textArray=name,height,length] extends [extends=Object]")
     useOOPInGandi(args: { name: string, attrs: string[], extends: string }) {
         data.write("protos", {

@@ -3,8 +3,6 @@ import type { ColorDefine, InputLoader, AnyArg } from "@framework/internal";
 import { Block, Collaborator, Extension, Menu, Translator, Version, BlockType } from "@framework/structs";
 import { GlobalContext, Unnecessary } from "@framework/tools";
 import { html, json, vector2, vector3 } from "@framework/built-ins/loaders";
-import leftArrow from "@framework/icons/leftArrow.svg";
-console.log(leftArrow);
 const translator = Translator.create("zh-cn", {
     name: "我的拓展",
     des: "这是我的第一个拓展"
@@ -16,7 +14,7 @@ translator.store("en", {
 export default class MyExtension extends Extension {
     loaders: Record<string, InputLoader> = { vector2, json, html, vector3 };
     blocks: Block<MyExtension>[] = [
-        Block.create("TestBlock $vec2 $vec3 $json $html", {
+        Block.create("TestBlock $vec2 $vec3 $json $html $strings", {
             arguments: [
                 {
                     name: "$vec2",
@@ -67,7 +65,8 @@ export default class MyExtension extends Extension {
             },
             "Cabbage白菜"
         ]),
-        new Menu("sauces", "番茄酱=ketchup,蛋黄酱=mayonnaise,mushroom,辣椒酱=hot sauce")
+        new Menu("sauces", "番茄酱=ketchup,蛋黄酱=mayonnaise,mushroom,辣椒酱=hot sauce"),
+        new Menu("suffixes", "printed,outputed,displayed")
     ];
     description = translator.load("des");
     collaborators = [

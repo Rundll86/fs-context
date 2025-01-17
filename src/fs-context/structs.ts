@@ -115,7 +115,7 @@ export class Block<O extends Extension = Extension> {
         for (const arg of this.arguments) {
             if (arg.type === "text") {
                 result += arg.content;
-            } else {
+            } else if (!arg.dyConfig) {
                 result += `[${arg.content}]`;
             }
         }
@@ -161,7 +161,6 @@ export class Block<O extends Extension = Extension> {
                 currentPart = new ArgumentPart(args[i] as string, "text");
             } else {
                 const currentArgument: ArgumentDefine = args[i] as ArgumentDefine;
-                console.log(currentArgument);
                 currentPart = new ArgumentPart(
                     currentArgument.name,
                     "input",

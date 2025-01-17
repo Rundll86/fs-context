@@ -9,7 +9,6 @@ export class ArgumentPart {
     constructor(content: string, type: ArgumentPartType, value?: AcceptedArgType, inputType?: InputType, dyConfig?: DynamicArgConfigDefine) {
         this.content = content;
         this.type = type;
-        console.log(content, inputType);
         if (value) this.value = value;
         if (inputType) this.inputType = inputType;
         this.dyConfig = dyConfig;
@@ -150,6 +149,7 @@ export interface LoaderConfig {
     target: Promise<{ default: typeof Extension }>;
     errorCatches: (new () => Error)[];
     platform: PlatformSupported[];
+    mode: "debug" | "release";
 }
 export type KeyValueString<T extends string = "="> = `${string}${T}${string}`;
 export type CopyAsGenericsOfArray<E> = E | E[];

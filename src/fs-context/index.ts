@@ -155,7 +155,6 @@ export namespace Extensions {
                     };
                     argList.forEach(e => {
                         if (e) {
-                            console.log(e);
                             if (e.isRest) {
                                 arg[e.name] = dyArgs.map((_, index) => {
                                     delete arg[`DYNAMIC_ARGS${index}`];
