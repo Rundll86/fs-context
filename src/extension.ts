@@ -33,6 +33,14 @@ export default class MyExtension extends Extension {
                 {
                     name: "$html",
                     inputType: "html"
+                },
+                {
+                    name: "$strings",
+                    rest: {
+                        preText(count) {
+                            return `Strings(${count})`;
+                        },
+                    }
                 }
             ]
         }, function (args) {

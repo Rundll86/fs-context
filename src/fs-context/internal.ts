@@ -1,20 +1,25 @@
-import { Block, DataStorer, Extension, Menu, Version } from "./structs";
+import type { Block, DataStorer, Extension, Menu, Version } from "./structs";
+import type Blockly from "blockly";
 export class ArgumentPart {
     content: string;
     type: ArgumentPartType;
     value: AcceptedArgType = "";
     inputType: InputType = "string";
-    constructor(content: string, type: ArgumentPartType, value?: AcceptedArgType, inputType?: InputType) {
+    dyConfig?: DynamicArgConfigDefine;
+    constructor(content: string, type: ArgumentPartType, value?: AcceptedArgType, inputType?: InputType, dyConfig?: DynamicArgConfigDefine) {
         this.content = content;
         this.type = type;
-        if (value !== undefined) this.value = value;
-        if (inputType !== undefined) this.inputType = inputType;
+        console.log(content, inputType);
+        if (value) this.value = value;
+        if (inputType) this.inputType = inputType;
+        this.dyConfig = dyConfig;
     }
 }
 export interface ArgumentDefine<T extends ValidArgumentName = ValidArgumentName> {
     name: T;
     value?: AcceptedArgType;
     inputType?: InputType | string;
+    rest?: DynamicArgConfigDefine;
 }
 export type ValidArgumentName = `${"$" | "_"}${string}`;
 export type MethodFunction<T> = (this: Extension, args: T) => any;
@@ -135,11 +140,6 @@ export type FilterWritableKeys<T> = {
 }
 export type If<C extends boolean, T, F> = C extends true ? T : F;
 export type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends (<T>() => T extends Y ? 1 : 2) ? true : false;
-// export type ObjectInclude<T = any, K extends string | number | symbol = string> = {
-//     [key: string]: T;
-// } & {
-//     [C in K]: T;
-// }
 export type VersionString = `${number}.${number}.${number}`;
 export type FilterKey<T, K> = {
     [P in keyof T as P extends K ? never : P]: never;
@@ -174,12 +174,13 @@ export interface BlockPlain {
     arguments: Record<string, ArgumentPlain>;
     text: string;
     blockType: BlockTypePlain;
+    dynamicArgsInfo?: DynamicArgConfigPlain;
 }
 export type ExtensionPlain = {
     getInfo: () => ExtensionInfo;
     runtime?: Scratch;
 } & {
-    [key: string]: MethodFunction<any>;
+    [key: string]: any;
     [key: symbol]: any;
 }
 export interface ExtensionInfo {
@@ -196,3 +197,47 @@ export interface InputLoader {
     defaultValue?: any;
     load: (data: string) => any;
 }
+export enum InputTypeOptionsLabel {
+    string = "ADD_TEXT_PARAMETER",
+    number = "ADD_NUM_PARAMETER",
+    bool = "ADD_BOOL_PARAMETER",
+};
+export type AcceptedInputType = keyof typeof InputTypeOptionsLabel;
+export type BlocklyType = typeof Blockly & {
+    ScratchMsgs: {
+        locales: Record<string, Record<string, string>>;
+        translate: (key: string) => string;
+    };
+    bindEventWithChecks_: <T extends keyof HTMLElementEventMap>(
+        a: SVGElement | null,
+        b: T,
+        c: Blockly.FieldImage,
+        d: (event: HTMLElementEventMap[T]) => any
+    ) => void;
+};
+export type SourceBlockTypeButScratch = Blockly.Block & {
+    addDynamicArg: (id: AcceptedInputType) => void;
+    removeDynamicArg: (id: string) => void
+    dynamicArgOptionalTypes_: (AcceptedInputType)[];
+    dynamicArgumentIds_: string[];
+    workspace: Blockly.Workspace & {
+        isDragging: () => boolean;
+    };
+};
+export type AllFunction = (...args: any[]) => any;
+export interface DynamicArgConfigPlainAllRequired {
+    defaultValues: CopyAsGenericsOfArray<string> | ((index: number) => string);
+    afterArg: string; //Ban in define
+    joinCh: string | ((index: number) => string);
+    dynamicArgTypes: AcceptedInputType[]; //Ban in define
+    preText: string | ((count: number) => string);
+    endText: string | ((count: number) => string);
+    paramsIncrement: CopyAsGenericsOfArray<number>;
+};
+export type DynamicArgConfigPlain = {
+    [K in keyof DynamicArgConfigPlainAllRequired]?: DynamicArgConfigPlainAllRequired[K];
+};
+export type DynamicArgConfigDefine = {
+    [K in keyof DynamicArgConfigPlain as K extends "afterArg" | "dynamicArgTypes" ? never : K]:
+    DynamicArgConfigPlain[K];
+};

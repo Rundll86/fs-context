@@ -11,36 +11,15 @@ import leftArrow from "./icons/leftArrow.svg";
 import minusButton from "./icons/minusButton.svg";
 import plusButton from "./icons/plusButton.svg";
 import defaultPlusSelectImage from "./icons/defaultPlusSelectImage.svg";
-import type { Scratch, ExtensionPlain } from "@framework/internal";
+import { InputTypeOptionsLabel, AcceptedInputType } from "@framework/internal";
+import type {
+    Scratch,
+    ExtensionPlain,
+    AllFunction,
+    BlocklyType,
+    SourceBlockTypeButScratch
+} from "@framework/internal";
 import type Blockly from "blockly";
-enum InputTypeOptionsLabel {
-    string = "ADD_TEXT_PARAMETER",
-    number = "ADD_NUM_PARAMETER",
-    bool = "ADD_BOOL_PARAMETER",
-};
-type AcceptedInputType = keyof typeof InputTypeOptionsLabel;
-type BlocklyType = typeof Blockly & {
-    ScratchMsgs: {
-        locales: Record<string, Record<string, string>>;
-        translate: (key: string) => string;
-    };
-    bindEventWithChecks_: <T extends keyof HTMLElementEventMap>(
-        a: SVGElement | null,
-        b: T,
-        c: Blockly.FieldImage,
-        d: (event: HTMLElementEventMap[T]) => any
-    ) => void;
-};
-type SourceBlockTypeButScratch = Blockly.Block & {
-    addDynamicArg: (id: AcceptedInputType) => void;
-    removeDynamicArg: (id: string) => void
-    dynamicArgOptionalTypes_: (AcceptedInputType)[];
-    dynamicArgumentIds_: string[];
-    workspace: Blockly.Workspace & {
-        isDragging: () => boolean;
-    };
-};
-type AllFunction = (...args: any[]) => any;
 const enabledDynamicArgBlocksInfo: Record<string | symbol, any> = {};
 const extInfo: Record<string | symbol, any> = {};
 let proxingBlocklyBlocks = false;
@@ -282,12 +261,12 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
         );
     };
     blockDefinition.attachShadow_ = function (input: any, argumentType: any, defaultValue = "") {
-        if (argumentType === "n" || argumentType === "s") {
-            const blockType = argumentType === "n" ? "math_number" : "text";
+        if (argumentType === "number" || argumentType === "string") {
+            const blockType = argumentType === "number" ? "math_number" : "text";
             Blockly.Events.disable();
             const newBlock = this.workspace.newBlock(blockType);
             try {
-                if (argumentType === "n") {
+                if (argumentType === "number") {
                     newBlock.setFieldValue(defaultValue, "NUM");
                 } else {
                     newBlock.setFieldValue(defaultValue, "TEXT");
@@ -439,7 +418,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
         updatePreText(this, num);
         for (let i = 0; i < num; i++) {
             const argumentType = this.dynamicArgumentTypes_[i];
-            if (!(argumentType === "n" || argumentType === "b" || argumentType === "s")) {
+            if (!Object.keys(InputTypeOptionsLabel).includes(argumentType)) {
                 throw new Error(`Found an dynamic argument with an invalid type: ${argumentType}`);
             }
             const id = this.dynamicArgumentIds_[i];
@@ -447,7 +426,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
             if (joinCh && (i !== 0 || afterArg)) {
                 input.appendField(getValue(joinCh, i, ""));
             }
-            if (argumentType === "b") {
+            if (argumentType === "bool") {
                 input.setCheck("Boolean");
             }
             this.populateArgument_(argumentType, connectionMap, id, input, i);
@@ -493,7 +472,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
         if (connectionMap && oldBlock) {
             connectionMap[input.name] = null;
             oldBlock.outputConnection.connect(input.connection);
-            if (type !== "b") {
+            if (type !== "bool") {
                 const shadowDom = oldShadow || this.buildShadowDom_(type);
                 input.connection.setShadowDom(shadowDom);
             }
@@ -518,10 +497,10 @@ export function initExpandableBlocks(extension: ExtensionPlain, plusImage = righ
         const info = origGetInfo.call(this);
         const { id, blocks: blocksInfo } = info;
         extInfo[id] = { id, PlusSelectButton, PlusButton, MinusButton };
-        blocksInfo.forEach((i: { opcode?: any; dynamicArgsInfo?: any; }) => {
+        blocksInfo.forEach((i: { opcode: string; dynamicArgsInfo?: any; }) => {
             const { dynamicArgsInfo } = i;
             if (dynamicArgsInfo) {
-                dynamicArgsInfo.dynamicArgTypes = dynamicArgsInfo.dynamicArgTypes || ["s"];
+                dynamicArgsInfo.dynamicArgTypes = dynamicArgsInfo.dynamicArgTypes || ["string"];
                 dynamicArgsInfo.extInfo = extInfo[id];
                 enabledDynamicArgBlocksInfo[`${id}_${i.opcode}`] = dynamicArgsInfo;
             }

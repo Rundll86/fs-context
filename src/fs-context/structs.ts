@@ -38,6 +38,20 @@ export class Extension {
     canvas?: HTMLCanvasElement;
     loaders: Record<string, InputLoader> = {};
     generated?: ExtensionPlain;
+    get loadersWithDefault(): Record<string, InputLoader> {
+        return {
+            ...this.loaders,
+            string: {
+                load: String
+            },
+            number: {
+                load: Number
+            },
+            bool: {
+                load: Boolean
+            }
+        };
+    }
     private static instance?: Extension;
     static get onlyInstance(): Extension {
         if (!this.instance) {
@@ -107,6 +121,15 @@ export class Block<O extends Extension = Extension> {
         }
         return result;
     }
+    get haveRestArg() {
+        return !!this.arguments.find(i => i.dyConfig);
+    }
+    get plainArguments() {
+        return this.arguments.filter(i => i.type === "input");
+    }
+    get textArguments() {
+        return this.arguments.filter(i => i.type === "text");
+    }
     static create<O extends Extension, T extends BlockConfigB<ArgumentDefine[]>>(
         text: string,
         config: T,
@@ -138,13 +161,15 @@ export class Block<O extends Extension = Extension> {
                 currentPart = new ArgumentPart(args[i] as string, "text");
             } else {
                 const currentArgument: ArgumentDefine = args[i] as ArgumentDefine;
+                console.log(currentArgument);
                 currentPart = new ArgumentPart(
                     currentArgument.name,
                     "input",
                     currentArgument.value,
-                    currentArgument.inputType as InputType
+                    currentArgument.inputType as InputType,
+                    currentArgument.rest
                 );
-            }
+            };
             this.arguments.push(currentPart);
         };
         if (config) {

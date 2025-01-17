@@ -1,6 +1,6 @@
-import { textArray } from "@framework/built-ins/loaders";
-import { InputLoader } from "@framework/internal";
-import { BlockType, Extension } from "@framework/structs";
+import { json, textArray } from "@framework/built-ins/loaders";
+import { InputLoader, Scratch } from "@framework/internal";
+import { Block, BlockType, Extension } from "@framework/structs";
 import { GlobalContext } from "@framework/tools";
 interface PrototypeDefine {
     name: string;
@@ -25,9 +25,37 @@ function findObject(name: string) {
     return data.read("objects").find(obj => obj.name === name);
 }
 export default class UseOOPInGandi extends Extension {
-    loaders: Record<string, InputLoader> = { textArray };
     id = "useoopingandi";
     displayName = "Use OOP in Gandi";
+    loaders: Record<string, InputLoader> = {
+        textArray,
+        json: {
+            load(src) {
+                return JSON.parse(src);
+            },
+            format: /{.*}|\[.*\]|".*"/
+        }
+    };
+    blocks: Block<UseOOPInGandi>[] = [
+        Block.create("Text array $array", {
+            type: "command",
+            arguments: [
+                {
+                    name: "$array",
+                    inputType: "json", //name of loader
+                    rest: {
+                        defaultValues: ["Hello", "World"],
+                        joinCh: ","
+                    }
+                }
+            ]
+        }, function textArray(args) {
+            console.log(args);
+        })
+    ];
+    init(runtime?: Scratch) {
+        console.log(runtime);
+    }
     @BlockType.Command("Create prototype [name=Wolf] with attrs [attrs:textArray=name,height,length] extends [extends=Object]")
     useOOPInGandi(args: { name: string, attrs: string[], extends: string }) {
         data.write("protos", {
