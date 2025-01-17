@@ -27,15 +27,7 @@ function findObject(name: string) {
 export default class UseOOPInGandi extends Extension {
     id = "useoopingandi";
     displayName = "Use OOP in Gandi";
-    loaders: Record<string, InputLoader> = {
-        textArray,
-        json: {
-            load(src) {
-                return JSON.parse(src);
-            },
-            format: /{.*}|\[.*\]|".*"/
-        }
-    };
+    loaders: Record<string, InputLoader> = { textArray, json };
     blocks: Block<UseOOPInGandi>[] = [
         Block.create("Text array $array", {
             type: "command",
