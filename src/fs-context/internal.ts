@@ -37,6 +37,7 @@ export interface ScratchWaterBoxed extends Scratch {
     currentExtension: ExtensionPlain | null;
     loadTempExt: () => void;
     currentCatchErrors: string[];
+    languageStore: Record<string, LanguageStored>;
 }
 export type BlockTypePlain = "command" | "reporter" | "bool";
 export type ExtractField<A extends (string | ArgumentDefine)[]> = {
@@ -99,8 +100,8 @@ export interface GlobalResourceMachine {
 }
 export interface ScratchTranslateFunction {
     language: LanguageSupported;
-    (key: string): string;
     setup: (data: Record<string, LanguageStored>) => void;
+    (key: string): string | null;
 }
 export interface StyleSetFunc<E extends HTMLElement> {
     <K extends keyof FilterWritableKeys<CSSStyleDeclaration>>

@@ -18,19 +18,23 @@ export default class MyExtension extends Extension {
             arguments: [
                 {
                     name: "$vec2",
-                    inputType: "vector2"
+                    inputType: "vector2",
+                    value:"1 1"
                 },
                 {
                     name: "$vec3",
-                    inputType: "vector3"
+                    inputType: "vector3",
+                    value:"2 2 2"
                 },
                 {
                     name: "$json",
-                    inputType: "json"
+                    inputType: "json",
+                    value:"{}"
                 },
                 {
                     name: "$html",
-                    inputType: "html"
+                    inputType: "html",
+                    value:"<div></div>"
                 },
                 {
                     name: "$strings",

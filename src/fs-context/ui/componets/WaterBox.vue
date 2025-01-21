@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <ScratchStage>
+        <ScratchStage :big="isBig">
             <span>舞台</span>
         </ScratchStage>
         <span v-if="!extensionLoaded">Loading extension...</span>
@@ -12,6 +12,7 @@
             <div class="tools">
                 <WButton @click="reloadExtension">重载拓展</WButton>
                 <WButton @click="copyExtensionUrl">复制拓展脚本url</WButton>
+                <WButton @click="isBig = !isBig">放大/缩小</WButton>
             </div>
             <div class="blocks">
                 <ScratchBlock v-for="block in blocks" :key="block.opcode" :colorBlock="colorBlock"
@@ -50,7 +51,8 @@ export default {
             blocks: [] as Block[],
             menus: [] as Menu[],
             extName: "",
-            extId: ""
+            extId: "",
+            isBig: false
         };
     },
     methods: {

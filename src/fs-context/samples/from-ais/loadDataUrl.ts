@@ -1,5 +1,4 @@
-import { Block, Extension, Translator, Version, BlockType } from "@framework/structs";
-import { GlobalContext } from "@framework/tools";
+import { Extension, Translator, Version, BlockType } from "@framework/structs";
 
 const translator = Translator.create("zh-cn", {
     name: "DataURL Loader",

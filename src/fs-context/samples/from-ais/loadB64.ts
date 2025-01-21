@@ -1,5 +1,4 @@
-import { Block, Extension, Translator, Version, BlockType } from "@framework/structs";
-import { GlobalContext } from "@framework/tools";
+import {Extension, Translator, Version, BlockType } from "@framework/structs";
 
 // 创建一个翻译器实例，用于翻译插件名称和描述等
 const translator = Translator.create("zh-cn", {

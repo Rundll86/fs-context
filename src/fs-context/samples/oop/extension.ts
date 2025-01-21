@@ -1,6 +1,6 @@
 import { json, textArray } from "@framework/built-ins/loaders";
-import { InputLoader, Scratch } from "@framework/internal";
-import { Block, BlockType, Extension } from "@framework/structs";
+import { InputLoader } from "@framework/internal";
+import { BlockType, Extension } from "@framework/structs";
 import { GlobalContext } from "@framework/tools";
 interface PrototypeDefine {
     name: string;
@@ -53,7 +53,7 @@ export default class UseOOPInGandi extends Extension {
             proto: args.proto,
             attrs: myAttrs,
             get validAttrs() {
-                return Object.fromEntries(Object.entries(myAttrs).filter(([key]) => myProto.attrs.includes(key)))
+                return Object.fromEntries(Object.entries(myAttrs).filter(([key]) => myProto.attrs.includes(key)));
             }
         });
     }

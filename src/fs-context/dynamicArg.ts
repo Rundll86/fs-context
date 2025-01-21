@@ -19,7 +19,6 @@ import type {
     BlocklyType,
     SourceBlockTypeButScratch
 } from "@framework/internal";
-import type Blockly from "blockly";
 const enabledDynamicArgBlocksInfo: Record<string | symbol, any> = {};
 const extInfo: Record<string | symbol, any> = {};
 let proxingBlocklyBlocks = false;
@@ -486,7 +485,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
 const patchSymbol = Symbol("patch");
 export function initExpandableBlocks(extension: ExtensionPlain, plusImage = rightArrow, minusImage = leftArrow): void {
     const { runtime } = extension;
-    if (!runtime) { throw new Error("Cannot get Scratch runtime") };
+    if (!runtime) { throw new Error("Cannot get Scratch runtime"); };
     const Blockly = getScratchBlocks(runtime);
     const { PlusSelectButton, PlusButton, MinusButton } = createButtons(Blockly, plusImage, minusImage);
     proxyBlocklyBlocksObject(runtime);
@@ -508,11 +507,17 @@ export function initExpandableBlocks(extension: ExtensionPlain, plusImage = righ
         return info;
     };
 }
-export function getDynamicArgs(args: Record<string, string | undefined>): string[] {
-    const res: string[] = [];
-    for (let i = 1; true; i++) {
-        const v = args[`DYNAMIC_ARGS${i}`];
-        if (v === undefined) return res;
-        res.push(v);
-    }
+export function getDynamicArgKeys(args: Record<string, any>): string[] {
+    const argNameSuffix = "DYNAMIC_ARGS";
+    return Object.keys(args)
+        .filter((key) => key.startsWith(argNameSuffix))
+        .filter(key => Number.isInteger(Number(key.replace(argNameSuffix, "") || undefined)))
+        .sort((a, b) => Number(a.replace(argNameSuffix, "")) - Number(b.replace(argNameSuffix, "")))
+        .filter((key, index) => Number(key.replace(argNameSuffix, "")) === index + 1);
+};
+export function getDynamicArgs(args: Record<string, any>): string[] {
+    return getDynamicArgKeys(args).map(key => args[key]);
 }
+export function getDynamicArgCount(args: Record<string, any>) {
+    return getDynamicArgKeys(args).length;
+};

@@ -3,9 +3,7 @@
         <div class="content">
             <slot></slot>
         </div>
-        <canvas id="scratch-stage">
-            <!-- <slot></slot> -->
-        </canvas>
+        <canvas id="scratch-stage" :class="{ big }"></canvas>
     </div>
 </template>
 <style scoped>
@@ -14,6 +12,11 @@ canvas {
     height: 360px;
     border-radius: 5px;
     border: 2px solid gray;
+}
+
+canvas.big {
+    width: 1280px;
+    height: 720px;
 }
 
 .block {
@@ -34,3 +37,13 @@ canvas {
     display: flex;
 }
 </style>
+<script lang="ts">
+export default {
+    props: {
+        big: {
+            type: Boolean,
+            default: false
+        }
+    }
+};
+</script>

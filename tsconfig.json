@@ -5,16 +5,15 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "outDir": "generated",
     "experimentalDecorators": true,
-    "resolveJsonModule": true,
     "moduleResolution": "node",
     "allowJs": true,
     "checkJs": true,
     "isolatedModules": true,
     "types": [
       "webpack",
-      "vue"
+      "vue",
+      "node"
     ],
     "paths": {
       "@framework/*": [

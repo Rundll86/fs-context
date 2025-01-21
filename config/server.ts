@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     waterBox: {
         port: 25565,
         output: "ui"

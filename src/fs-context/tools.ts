@@ -1,5 +1,4 @@
 import {
-    AcceptedInputType,
     ArgumentPart,
     ElementContext,
     GlobalResourceMachine,
@@ -12,7 +11,7 @@ import {
     AcceptedMenuValue
 } from "./internal";
 import { DataStorer, Extension } from "./structs";
-import { CastError, MissingError, OverwriteWarn, SyntaxError } from "./exceptions";
+import { MissingError, OverwriteWarn, SyntaxError } from "./exceptions";
 export namespace GlobalContext {
     const context: GlobalResourceMachine = window._FSContext as GlobalResourceMachine;
     export function createDataStore<T extends { [key: string]: any }>(target: typeof Extension | string, datas: T): DataStorer<T> {
@@ -135,7 +134,7 @@ export namespace Unnecessary {
         return result;
     }
     export function hexToRgb(str: HexColorString): [number, number, number] {
-        let hexs: any[] = [];;
+        let hexs: any[] = [];
         const reg = /^#?[0-9A-Fa-f]{6}$/;
         if (!reg.test(str)) throw new SyntaxError('Invalid hex color string');
         str = str.replace('#', '') as HexColorString;

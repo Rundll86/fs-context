@@ -10,7 +10,8 @@ const translator = Translator.create("zh-cn", {
     move: "移动$name到$pos",
     resize: "调整$name的尺寸为$size",
     setLayer: "设置$name的图层为$layer",
-    remove: "移除$name"
+    remove: "移除$name",
+    get: "获取$name的URL"
 });
 interface Position {
     x: number;
@@ -24,6 +25,7 @@ export default class FSIFrame extends Extension {
     collaborators = [
         new Collaborator("FallingShrimp", "https://rundll86.github.io")
     ];
+    allowSandboxed = false;
     blocks = [
         Block.create(translator.load("create"), {
             arguments: [
@@ -59,13 +61,15 @@ export default class FSIFrame extends Extension {
                 .data("ratio-y", size.y / (this.canvas?.clientHeight || size.y));
             dataStore.read("rootBase").child(iframe);
             dataStore.write("iframes", iframe);
-            setInterval(() => {
+            const update = () => {
                 if (this.canvas) {
                     iframe
                         .style("width", `${this.canvas.clientWidth * iframe.data("ratio-x")}px`)
                         .style("height", `${this.canvas.clientHeight * iframe.data("ratio-y")}px`);
-                }
-            }, 100);
+                };
+                requestAnimationFrame(update);
+            };
+            requestAnimationFrame(update);
         }),
         Block.create(translator.load("setUrl"), {
             arguments: [
@@ -135,6 +139,16 @@ export default class FSIFrame extends Extension {
             ]
         }, function remove(arg) {
             document.getElementById(`fsiframe-${arg.$name}`)?.remove();
+        }),
+        Block.create(translator.load("get"), {
+            arguments: [
+                {
+                    name: "$name"
+                }
+            ],
+            type: "reporter"
+        }, function get(arg) {
+            return document.getElementById(`fsiframe-${arg.$name}`)?.getAttribute("src");
         })
     ];
     init(runtime: Scratch) {
