@@ -166,6 +166,43 @@ export namespace Unnecessary {
     export function isAsyncFunction(func: (...args: any[]) => any) {
         return func.constructor.name === "AsyncFunction";
     }
+    export async function uploadFile(accept: string = "*") {
+        return new Promise<File>((resolve, reject) => {
+            const input = Unnecessary.elementTree("input").attribute("type", "file").attribute("accept", accept);
+            input.result.addEventListener("change", () => {
+                if (input.result.files) {
+                    resolve(input.result.files[0]);
+                } else {
+                    reject(new Error("No file selected"));
+                };
+            });
+            input.result.click();
+        });
+    }
+    type AcceptType = {
+        dataurl: string,
+        arraybuffer: ArrayBuffer,
+        text: string
+    };
+    export async function readFile<T extends "dataurl" | "arraybuffer" | "text">(file: File, target: T): Promise<AcceptType[T]> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.addEventListener("load", () => {
+                if (reader.result) resolve(reader.result as AcceptType[T]);
+                else reject(null);
+            });
+            reader.addEventListener("error", () => {
+                reject(null);
+            });
+            if (target === "dataurl") {
+                reader.readAsDataURL(file);
+            } else if (target === "arraybuffer") {
+                reader.readAsArrayBuffer(file);
+            } else if (target === "text") {
+                reader.readAsText(file);
+            };
+        });
+    }
 }
 export namespace MenuParser {
     let stringArraySeparator = ",";
