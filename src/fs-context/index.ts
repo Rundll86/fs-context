@@ -16,6 +16,7 @@ import { AcceptedInputType } from "./internal";
 import type { Extension } from "./structs";
 import loaderConfig from "@config/loader";
 import serverConfig from "@config/server";
+import "./styles/common.css";
 if (!window._FSContext) {
     window._FSContext = {
         EXTENSIONS: {},

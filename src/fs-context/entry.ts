@@ -1,4 +1,3 @@
-import "./styles/common.css";
 import { Extensions } from ".";
 import type { LoaderConfig, ScratchWaterBoxed } from "@framework/internal";
 export default async function load() {

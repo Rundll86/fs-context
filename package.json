@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "types": "src/fs-context/index.ts",
   "main": "lib/src/fs-context/index.js",
+  "files": [
+    "lib",
+    "src"
+  ],
   "scripts": {
     "project": "node cli.cjs"
   },
