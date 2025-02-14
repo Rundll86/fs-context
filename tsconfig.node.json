@@ -1,9 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "CommonJS"
-  },
-  "include": [
-    "src/fs-context/**/*"
-  ]
+    "module": "CommonJS",
+    "outDir": "lib"
+  }
 }

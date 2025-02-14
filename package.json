@@ -1,6 +1,8 @@
 {
   "name": "fs-context",
   "version": "1.0.0",
+  "types": "src/fs-context/index.ts",
+  "main": "lib/src/fs-context/index.js",
   "scripts": {
     "project": "node cli.cjs"
   },
