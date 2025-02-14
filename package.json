@@ -13,8 +13,8 @@
   },
   "typesVersions": {
     "*": {
-      "fs-context/*": [
-        "lib/src/fs-context/*"
+      "./*": [
+        "src/fs-context/*"
       ]
     }
   },
