@@ -1,6 +1,6 @@
 {
   "name": "fs-context",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "types": "src/fs-context/index.ts",
   "main": "lib/src/fs-context/index.js",
   "files": [
