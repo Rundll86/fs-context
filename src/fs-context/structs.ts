@@ -233,7 +233,7 @@ export class Translator<L extends LanguageSupported, D extends LanguageStored> {
         return result;
     }
 }
-export class DataStorer<T extends { [key: string]: any } = any> {
+export class DataStorer<T = any> {
     private data: T;
     constructor(data: T) {
         this.data = data;

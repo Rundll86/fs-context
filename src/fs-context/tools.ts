@@ -11,10 +11,10 @@ import {
     AcceptedMenuValue
 } from "./internal";
 import { DataStorer, Extension } from "./structs";
-import { MissingError, OverwriteWarn, SyntaxError } from "./exceptions";
+import { ExtensionLoadError, MissingError, OverwriteWarn, SyntaxError } from "./exceptions";
 export namespace GlobalContext {
     const context: GlobalResourceMachine = window._FSContext as GlobalResourceMachine;
-    export function createDataStore<T extends { [key: string]: any }>(target: typeof Extension | string, datas: T): DataStorer<T> {
+    export function createDataStore<T>(target: typeof Extension | string, datas: T): DataStorer<T> {
         const { id } = typeof target === "string" ? { id: target } : target.onlyInstance;
         if (Object.hasOwn(context.EXPORTED, id)) {
             throw new OverwriteWarn(`Data store named "${id}" is already exists.`);
@@ -176,6 +176,7 @@ export namespace Unnecessary {
                     reject(new Error("No file selected"));
                 };
             });
+            input.result.accept = accept;
             input.result.click();
         });
     }
@@ -183,7 +184,7 @@ export namespace Unnecessary {
         dataurl: string,
         arraybuffer: ArrayBuffer,
         text: string
-    };
+    }
     export async function readFile<T extends "dataurl" | "arraybuffer" | "text">(file: File, target: T): Promise<AcceptType[T]> {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -202,6 +203,33 @@ export namespace Unnecessary {
                 reader.readAsText(file);
             };
         });
+    }
+    export function base64ToBlob(base64: string, mimeType: string) {
+        const byteCharacters = atob(base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        };
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: mimeType });
+        return blob;
+    }
+    export function createObjectURL(data: BlobPart, type?: BlobPropertyBag): string {
+        return URL.createObjectURL(new Blob([data], type ?? { type: "application/text" }));
+    }
+    export function createStageOverlay(extension: Extension): HTMLDivElement {
+        if (extension.allowSandboxed) {
+            throw new ExtensionLoadError("Cannot create stage overlay with a sandboxed extension.");
+        };
+        if (!extension.canvas || !extension.canvas.parentElement) {
+            throw new MissingError("Cannot find renderer canvas");
+        };
+        return extension.canvas.parentElement.appendChild(
+            elementTree("div")
+                .class("fsc-overlay")
+                .attribute("id", `ext-${extension.id}`)
+                .result
+        );
     }
 }
 export namespace MenuParser {

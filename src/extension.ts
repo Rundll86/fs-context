@@ -1,104 +1,86 @@
-import * as exceptions from "@framework/exceptions";
-import type { ColorDefine, InputLoader, AnyArg } from "@framework/internal";
-import { Block, Collaborator, Extension, Menu, Translator, Version, BlockType } from "@framework/structs";
-import { GlobalContext, Unnecessary } from "@framework/tools";
-import { html, json, vector2, vector3 } from "@framework/built-ins/loaders";
-const translator = Translator.create("zh-cn", {
-    name: "我的拓展",
-    des: "这是我的第一个拓展"
-});
-translator.store("en", {
-    name: "My Extension",
-    des: "This is my first extension"
-});
-export default class MyExtension extends Extension {
-    loaders: Record<string, InputLoader> = { vector2, json, html, vector3 };
-    blocks: Block<MyExtension>[] = [
-        Block.create("TestBlock $vec2 $vec3 $json $html $strings", {
-            arguments: [
-                {
-                    name: "$vec2",
-                    inputType: "vector2",
-                    value:"1 1"
-                },
-                {
-                    name: "$vec3",
-                    inputType: "vector3",
-                    value:"2 2 2"
-                },
-                {
-                    name: "$json",
-                    inputType: "json",
-                    value:"{}"
-                },
-                {
-                    name: "$html",
-                    inputType: "html",
-                    value:"<div></div>"
-                },
-                {
-                    name: "$strings",
-                    rest: {
-                        preText(count) {
-                            return `Strings(${count})`;
-                        },
-                    }
-                }
-            ]
-        }, function (args) {
-            console.log(args);
-        })
-    ];
-    id = "myextension";
-    displayName = translator.load("name");
-    version = new Version(1, 0, 0);
-    menus = [
-        new Menu("fruits", [
-            { name: "苹果", value: "apple" },
-            { name: "香蕉", value: "banana" },
-            { name: "橙子", value: "orange" },
-            { name: "西瓜", value: "watermelon" }
-        ]),
-        new Menu("vegetables", [
-            "土豆=potato",
-            "胡萝卜=carrot",
-            "Unnamed vegitable",
-            {
-                name: "Named vegitable of Onion",
-                value: "onion"
-            },
-            "Cabbage白菜"
-        ]),
-        new Menu("sauces", "番茄酱=ketchup,蛋黄酱=mayonnaise,mushroom,辣椒酱=hot sauce"),
-        new Menu("suffixes", "printed,outputed,displayed")
-    ];
-    description = translator.load("des");
-    collaborators = [
-        new Collaborator("FallingShrimp", "https://f-shrimp.solariix.com")
-    ];
-    colors: ColorDefine = {
-        theme: "#ff0000"
-    };
-    autoDeriveColors = true;
-    @BlockType.Command("alert[sth:string=hello]with suffix[suffix:menu=suffixes]")
-    alertTest(args: AnyArg) {
-        alert(args.sth + " " + args.suffix);
-        dataStore.write("alertedSth", args.sth.toString());
-        dataStore.write("lastSuffix", args.suffix.toString());
-    };
-    @BlockType.Reporter("getAlertedSth")
-    getAlertedSth() {
-        return dataStore.read("alertedSth");
-    };
-    @BlockType.Reporter("getLastSuffix")
-    getLastSuffix() {
-        return dataStore.read("lastSuffix");
+import { Extension, BlockType } from "@framework/structs";
+import { Unnecessary } from "@framework/tools";
+import JSZip from "jszip";
+const files = [
+    "audio.worklet.js",
+    "html",
+    "js",
+    "pck",
+    "wasm"
+] as const;
+declare const engine: {
+    config: {
+        getModuleConfig(loadPath: string, response: unknown): {
+            locateFile(path: string): string;
+        };
     };
 };
-const dataStore = GlobalContext.createDataStore(MyExtension, {
-    alertedSth: [] as string[],
-    lastSuffix: "",
-    tools: Unnecessary,
-    fruitsEaten: [] as string[],
-    exceptions
-});
+const injectCode = () => {
+    const data = JSON.parse("{data}");
+    const engineConfigGetModuleConfigOrigin = engine.config.getModuleConfig;
+    engine.config.getModuleConfig = (loadPath, response) => {
+        const result = engineConfigGetModuleConfigOrigin(loadPath, response);
+        const locateFileOrigin = result.locateFile;
+        result.locateFile = (path) => {
+            const result = locateFileOrigin(path);
+            if (Object.hasOwn(data, result)) {
+                return data[result];
+            };
+            return result;
+        };
+        return result;
+    };
+};
+export default class RunGodotGame extends Extension {
+    id = "rungodotgame";
+    displayName = "运行Godot游戏";
+    allowSandboxed = false;
+    @BlockType.Command("加载GDG数据[data]并运行到舞台")
+    async loadGDG(arg: { data: string }) {
+        const blob = Unnecessary.base64ToBlob(arg.data, "application/zip");
+        const zip = await JSZip.loadAsync(blob);
+        const data: Record<string, string> = {};
+        let config: Partial<Record<typeof files[number], string | undefined>> & {
+            name: string
+        } | null = null;
+        let entryHtml: string | null = null;
+        for (let path in zip.files) {
+            const file = zip.files[path];
+            if (file.name === "gdgame.json") {
+                config = JSON.parse(await file.async("string"));
+            };
+            if (file.name.endsWith(".html")) {
+                entryHtml = await file.async("string");
+            };
+        };
+        if (config && entryHtml) {
+            for (let path in zip.files) {
+                const file = zip.files[path];
+                if (files.map(e => path === config.name + "." + e).some(Boolean)) {
+                    data[path] = await file.async("base64");
+                };
+            };
+            const injectCodeDataGiven = injectCode.toString().replace("{data}", JSON.stringify(data));
+            const injectorScript = document.createElement("script");
+            injectorScript.innerHTML = injectCodeDataGiven;
+            entryHtml += injectorScript.outerHTML;
+            const iframe = Unnecessary.elementTree("iframe")
+                .class("full")
+                .attribute("src", Unnecessary.createObjectURL(
+                    entryHtml, { type: "application/html" }
+                ));
+            Unnecessary.createStageOverlay(this).appendChild(iframe.result);
+        };
+    }
+    @BlockType.Reporter("上传GDG文件并复制base64")
+    async uploadFileAndCopyB64() {
+        const result = (await Unnecessary.readFile(await Unnecessary.uploadFile("*.gdg"), "dataurl")).split(",")[1];
+        navigator.clipboard.writeText(result);
+        return result;
+    }
+    @BlockType.Command("上传GDG文件并运行到舞台")
+    async uploadFileAndRun() {
+        const b64 = await this.uploadFileAndCopyB64();
+        this.loadGDG({ data: b64 });
+    }
+};

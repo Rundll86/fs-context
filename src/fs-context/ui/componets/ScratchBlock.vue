@@ -33,7 +33,12 @@ function runMethod(ele: HTMLDivElement, opcode: string) {
         && window.ScratchWaterBoxed.currentExtension
         && window.ScratchWaterBoxed.currentExtensionPlain
     ) {
-        console.log(window.ScratchWaterBoxed.currentExtension[opcode].call(window.ScratchWaterBoxed.currentExtensionPlain, calcArgs(ele)));
+        const data = window.ScratchWaterBoxed.currentExtension[opcode].call(window.ScratchWaterBoxed.currentExtensionPlain, calcArgs(ele));
+        if (data instanceof Promise) {
+            data.then(e => console.log(e));
+        } else {
+            console.log(data);
+        };
     };
 };
 function view(opcode: string, type: string, unparsedText: string) {
