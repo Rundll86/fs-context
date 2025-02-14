@@ -9,10 +9,14 @@
   ],
   "exports": {
     ".": "./lib/src/fs-context/index.js",
-    "./exceptions": "./lib/src/fs-context/exceptions.js",
-    "./internal": "./lib/src/fs-context/internal.js",
-    "./structs": "./lib/src/fs-context/structs.js",
-    "./tools": "./lib/src/fs-context/tools.js"
+    "./*": "./lib/src/fs-context/*"
+  },
+  "typesVersions": {
+    "*": {
+      "fs-context/*": [
+        "lib/src/fs-context/*"
+      ]
+    }
   },
   "scripts": {
     "project": "node cli.cjs"
