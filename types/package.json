@@ -1,0 +1,6 @@
+{
+  "name": "@types/fs-context",
+  "version": "1.0.0",
+  "license": "MIT",
+  "types": "import.d.ts"
+}
