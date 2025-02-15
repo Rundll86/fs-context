@@ -14,8 +14,6 @@ import {
 } from "./internal";
 import { AcceptedInputType } from "./internal";
 import type { Extension } from "./structs";
-import loaderConfig from "@config/loader";
-import serverConfig from "@config/server";
 import "./styles/common.css";
 if (!window._FSContext) {
     window._FSContext = {
@@ -208,10 +206,6 @@ export namespace Extensions {
         };
         return ExtensionConstructor as any;
     }
-    export const config: Record<string, any> = {
-        loader: loaderConfig,
-        server: serverConfig
-    };
     export function isInWaterBoxed() {
         return window.ScratchWaterBoxed !== undefined;
     }

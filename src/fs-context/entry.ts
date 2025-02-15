@@ -1,9 +1,9 @@
 import { Extensions } from ".";
-import type { LoaderConfig, ScratchWaterBoxed } from "@framework/internal";
+import type { ScratchWaterBoxed } from "@framework/internal";
+import loaderConfig from "@config/loader";
 export default async function load() {
     const currentScratch = Extensions.getScratch() as ScratchWaterBoxed;
     if (currentScratch) {
-        const loaderConfig: LoaderConfig = Extensions.config.loader;
         const { default: target } = await loaderConfig.target;
         const extensionLoaded = await Extensions.load(target);
         if (loaderConfig.mode === "debug") {

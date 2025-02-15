@@ -69,7 +69,7 @@ buildCommand.command("lib")
     .description("build node module as production environment")
     .action(() => {
         console.log("Building node_module...")
-        child_process.spawnSync("tsc -p tsconfig.node.json", { stdio: "inherit" });
+        child_process.execSync("tsc -p tsconfig.node.json", { stdio: "inherit" });
     });
 const devCommand = program.command("dev")
     .description("about dev server");
