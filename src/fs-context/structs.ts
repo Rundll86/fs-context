@@ -14,12 +14,13 @@ import type {
     BlockConfigA,
     MenuDefine,
     InputLoader,
-    InputType,
-    ExtensionPlain
+    ExtensionPlain,
+    CopyAsGenericsOfArray
 } from "./internal";
 import { ArgumentPart } from "./internal";
 import { MenuParser, TextParser, Unnecessary } from "./tools";
 import { MissingError, OnlyInstanceWarn } from "./exceptions";
+import md5 from "md5";
 export class Extension {
     id: string = "example-extension";
     displayName: string = "Example extension";
@@ -103,16 +104,17 @@ export class Extension {
     };
 }
 export class Block<O extends Extension = Extension> {
-    method: (this: O, args: any) => any = () => { };
-    arguments: ArgumentPart[] = [];
+    method: (this: O, args: any, overloadIndex: number) => any = () => { };
+    parts: ArgumentPart[] = [];
+    overloads: ArgumentPart[][] = [];
     type: BlockTypePlain = "command";
     private _opcode: string = "";
     get opcode(): string {
-        return this._opcode;
+        return this._opcode || md5(this.text || this.overloadedText[0]);
     }
     get text(): string {
         let result: string = "";
-        for (const arg of this.arguments) {
+        for (const arg of this.parts) {
             if (arg.type === "text") {
                 result += arg.content;
             } else if (!arg.dyConfig) {
@@ -121,56 +123,61 @@ export class Block<O extends Extension = Extension> {
         }
         return result;
     }
+    get overloadedText(): string[] {
+        const results: string[] = [];
+        for (const overload of this.overloads) {
+            let result: string = "";
+            for (const arg of overload) {
+                if (arg.type === "text") {
+                    result += arg.content;
+                } else if (!arg.dyConfig) {
+                    result += `[${arg.content}]`;
+                }
+            }
+            results.push(result);
+        }
+        return results;
+    }
     get haveRestArg() {
-        return !!this.arguments.find(i => i.dyConfig);
+        return !!this.parts.find(i => i.dyConfig);
     }
     get plainArguments() {
-        return this.arguments.filter(i => i.type === "input");
+        return this.parts.filter(i => i.type === "input");
     }
     get textArguments() {
-        return this.arguments.filter(i => i.type === "text");
+        return this.parts.filter(i => i.type === "text");
     }
     static create<O extends Extension, T extends BlockConfigB<ArgumentDefine[]>>(
-        text: string,
+        text: CopyAsGenericsOfArray<string>,
         config: T,
-        method?: (this: O, arg: T extends BlockConfigB<infer R> ? ExtractField<R> : never) => any
+        method?: (
+            this: O,
+            args: T extends BlockConfigB<infer R> ? ExtractField<R> & Record<string, any> : never,
+            overloadIndex: number
+        ) => any
     ): Block<O> {
         const realConfig: BlockConfigB<ArgumentDefine[]> = { arguments: config.arguments || [], ...config };
-        const _arguments = realConfig.arguments as ArgumentDefine[];
+        const argumentTypeOverrides = realConfig.arguments ?? [];
         const realMethod = method || (() => { }) as any;
-        const textLoaded: (string | ArgumentDefine)[] = [];
-        const messages = Unnecessary.splitTextPart(text, _arguments.map(i => i.name));
-        const args = Unnecessary.splitArgBoxPart(text, _arguments.map(i => i.name));
-        for (let i = 0; i < messages.length; i++) {
-            textLoaded.push(messages[i].replaceAll("[", "\\[").replaceAll("]", "\\]"));
-            const current = _arguments.find(e => e.name === args[i]);
-            if (current) {
-                textLoaded.push(current);
-            };
-        };
-        return new Block<O>({
+        const result = new Block<O>({
             method: realMethod,
             type: realConfig.type,
-            opcode: method?.name || Unnecessary.internalUUID.next()
-        }, ...textLoaded);
-    }
-    constructor(config?: BlockConfigA<[]>, ...args: any[]) {
-        for (let i = 0; i < args.length; i++) {
-            let currentPart: ArgumentPart;
-            if (typeof args[i] === "string") {
-                currentPart = new ArgumentPart(args[i] as string, "text");
-            } else {
-                const currentArgument: ArgumentDefine = args[i] as ArgumentDefine;
-                currentPart = new ArgumentPart(
-                    currentArgument.name,
-                    "input",
-                    currentArgument.value,
-                    currentArgument.inputType as InputType,
-                    currentArgument.rest
-                );
-            };
-            this.arguments.push(currentPart);
+            opcode: method?.name
+        });
+        if (Array.isArray(text)) {
+            result.overloads = text.map(i => TextParser.parsePart(i));
+        } else {
+            result.parts = TextParser.parsePart(text).map(e => {
+                const currentOverride = argumentTypeOverrides.find(i => i.name === e.content);
+                if (e.type === "input" && currentOverride && currentOverride.inputType) {
+                    e.inputType = currentOverride.inputType;
+                };
+                return e;
+            });
         };
+        return result;
+    }
+    constructor(config?: BlockConfigA<[]>) {
         if (config) {
             const data = config;
             if (data.method) {
@@ -294,7 +301,7 @@ export namespace BlockType {
                 method: descriptor.value
             });
             const parent: typeof Extension = target.constructor as typeof Extension;
-            block.arguments = TextParser.parsePart(text);
+            block.parts = TextParser.parsePart(text);
             parent.blockDecorated.push(block);
         };
     }

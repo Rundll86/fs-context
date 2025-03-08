@@ -13,6 +13,7 @@ import {
     ScratchWaterBoxed
 } from "./internal";
 import { AcceptedInputType } from "./internal";
+import { initOverloadedBlocks } from "./overloadedBlock";
 import type { Extension } from "./structs";
 import "./styles/common.css";
 if (!window._FSContext) {
@@ -45,7 +46,7 @@ export namespace Extensions {
                 ext.canvas = runtime?.renderer.canvas;
             };
             ext.blocks.forEach(block => {
-                block.arguments.forEach(arg => {
+                block.parts.forEach(arg => {
                     if (arg.inputType === "menu" && arg.value instanceof Menu) {
                         ext.menus.push(arg.value);
                         arg.value = arg.value.name;
@@ -61,6 +62,9 @@ export namespace Extensions {
                     blockType: block.type,
                     text: block.text,
                     arguments: args
+                };
+                if (block.overloads) {
+                    currentBlock.overloads = block.overloadedText;
                 };
                 for (const argIndex in block.plainArguments) {
                     const arg = block.plainArguments[argIndex];
@@ -188,20 +192,23 @@ export namespace Extensions {
                         throw new MissingError(`Cannot find valid arg loader of arg ${arg.name}`);
                     };
                 });
-                if (Unnecessary.isAsyncFunction(block.method)) {
-                    result[block.opcode] = async (arg: Record<string, any>) => {
-                        _processArg(arg);
-                        return JSON.stringify(await block.method.call(ext, arg));
-                    };
-                } else {
-                    result[block.opcode] = (arg: Record<string, any>) => {
-                        _processArg(arg);
-                        return JSON.stringify(block.method.call(ext, arg));
+                result[block.opcode] = (arg: Record<string, any>) => {
+                    _processArg(arg);
+                    let { $overloadIndex } = arg;
+                    if ($overloadIndex !== undefined) delete arg.$overloadIndex;
+                    const result = block.method.call(ext, arg, $overloadIndex ?? 0);
+                    if (result instanceof Promise) {
+                        return result.then((res) => {
+                            return JSON.stringify(res);
+                        }).catch(err => { throw err; });
+                    } else {
+                        return JSON.stringify(result);
                     };
                 };
             });
             ext.generated = result;
             if (!isInWaterBoxed()) initExpandableBlocks(result);
+            if (!isInWaterBoxed()) initOverloadedBlocks(result);
             return result;
         };
         return ExtensionConstructor as any;

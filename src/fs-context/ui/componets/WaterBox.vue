@@ -18,7 +18,7 @@
                 <ScratchBlock v-for="block in blocks" :key="block.opcode" :colorBlock="colorBlock"
                     :colorInputer="colorInputer" :colorMenu="colorMenu" :opcode="block.opcode" :type="block.type"
                     :unparsedText="block.text">
-                    <span v-for="arg in block.arguments" :key="arg.content"
+                    <span v-for="arg in block.parts" :key="arg.content"
                         :class="{ 'texts': true, 'input': arg.type === 'input' }">
                         <span v-if="arg.type === 'text'" class="text">{{ arg.content }}</span>
                         <span v-if="arg.type === 'input'" class="label">({{ arg.inputType }}) {{ arg.content }}:</span>

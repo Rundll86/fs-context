@@ -98,22 +98,6 @@ export namespace Unnecessary {
     export function randomColor(): HexColorString {
         return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
     }
-    export class UUIDAutoscalator {
-        private last: number = 1;
-        private length: number = 4;
-        next(): string {
-            const result = [];
-            for (let i = 0; i < this.length; i++) {
-                this.last++;
-                result.push(this.last.toString(32).slice(0, 5));
-            }
-            return result.join('-');
-        }
-        constructor(length: number = 4) {
-            this.length = length;
-        }
-    }
-    export const internalUUID = new UUIDAutoscalator();
     export function splitArgBoxPart(str: string, substrings: string[]) {
         const filteredSubstrings = [];
         for (let i = 0; i < str.length; i++) {

@@ -1,5 +1,7 @@
+import { Input, inputTypes } from "blockly/core/inputs";
 import type { Block, DataStorer, Extension, Menu, Version } from "./structs";
 import type Blockly from "blockly";
+import { Connection, ContextMenuRegistry } from "blockly";
 export class ArgumentPart {
     content: string;
     type: ArgumentPartType;
@@ -17,7 +19,7 @@ export class ArgumentPart {
 export interface ArgumentDefine<T extends ValidArgumentName = ValidArgumentName> {
     name: T;
     value?: AcceptedArgType;
-    inputType?: InputType | string;
+    inputType?: InputType;
     rest?: DynamicArgConfigDefine;
 }
 export type ValidArgumentName = `${"$" | "_"}${string}`;
@@ -46,7 +48,7 @@ export type ExtractField<A extends (string | ArgumentDefine)[]> = {
 export interface BlockConfigA<T extends (string | ArgumentDefine)[]> {
     method?: MethodFunction<ExtractField<T>>;
     type?: BlockTypePlain;
-    opcode: string;
+    opcode?: string;
 }
 export interface BlockConfigB<T extends ArgumentDefine[]> {
     arguments?: T;
@@ -176,6 +178,7 @@ export interface BlockPlain {
     text: string;
     blockType: BlockTypePlain;
     dynamicArgsInfo?: DynamicArgConfigPlain;
+    overloads?: string[];
 }
 export type ExtensionPlain = {
     getInfo: () => ExtensionInfo;
@@ -216,18 +219,42 @@ export type BlocklyType = typeof Blockly & {
         d: (event: HTMLElementEventMap[T]) => any
     ) => void;
 };
+export type ConnectionMapper = Record<string, {
+    shadow: Element | null;
+    block: Blockly.Block | null;
+}>;
 export type SourceBlockTypeButScratch = Blockly.Block & {
+    rendered: boolean;
+    plusButton_: Blockly.FieldImage;
+    minusButton_: Blockly.FieldImage;
+    customContextMenu: (menu: any) => void;
+    attachShadow_: (a: any, b: any, c: any) => void;
     addDynamicArg: (id: AcceptedInputType) => void;
     removeDynamicArg: (id: string) => void
+    disconnectDynamicArgBlocks_: () => ConnectionMapper;
+    removeAllDynamicArgInputs_: () => void;
+    createAllDynamicArgInputs_: (connection: ConnectionMapper) => void;
+    deleteShadows_: (connection: ConnectionMapper) => void;
+    render: (d?: boolean) => void;
+    updateDisplay_: () => void;
+    buildShadowDom_: (type: AcceptedInputType) => void;
+    initSvg: () => void;
     dynamicArgOptionalTypes_: (AcceptedInputType)[];
     dynamicArgumentIds_: string[];
+    dynamicArgInfo_: DynamicArgConfigPlain;
+    dynamicArgumentTypes_: AcceptedInputType[];
+    populateArgument_: (type: AcceptedInputType, connectionMap: any, id: string, input: Input, i: number) => void;
     workspace: Blockly.Workspace & {
         isDragging: () => boolean;
     };
+    overloads_: string[];
+    currentOverload_: string;
+    setOverload: (overload: string) => void;
+    method: (args: any) => any;
 };
 export type AllFunction = (...args: any[]) => any;
 export interface DynamicArgConfigPlainAllRequired {
-    defaultValues: CopyAsGenericsOfArray<string> | ((index: number) => string);
+    defaultValues: CopyAsGenericsOfArray<string> | ((index: number, id?: string) => string);
     afterArg: string; //Ban in define
     joinCh: string | ((index: number) => string);
     dynamicArgTypes: AcceptedInputType[]; //Ban in define

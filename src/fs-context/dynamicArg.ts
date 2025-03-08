@@ -17,8 +17,10 @@ import type {
     ExtensionPlain,
     AllFunction,
     BlocklyType,
-    SourceBlockTypeButScratch
+    SourceBlockTypeButScratch,
+    ConnectionMapper
 } from "@framework/internal";
+import { Block, Connection, Input } from "blockly";
 const enabledDynamicArgBlocksInfo: Record<string | symbol, any> = {};
 const extInfo: Record<string | symbol, any> = {};
 let proxingBlocklyBlocks = false;
@@ -43,7 +45,7 @@ function setLocales(Blockly: BlocklyType) {
     Object.assign(Blockly.ScratchMsgs.locales.en, {
         ADD_TEXT_PARAMETER: "Add Text Parameter",
         ADD_NUM_PARAMETER: "Add Num Parameter",
-        ADD_BOOL_PARAMETER: "Add Booln Parameter",
+        ADD_BOOL_PARAMETER: "Add Boolean Parameter",
         DELETE_DYNAMIC_PARAMETER: "Delete Dynamic Parameter",
     });
     Object.assign(Blockly.ScratchMsgs.locales["zh-cn"], {
@@ -145,13 +147,13 @@ function proxyBlocklyBlocksObject(runtime: Scratch) {
     Blockly.Blocks = new Proxy(Blockly.Blocks, {
         set(target, opcode, blockDefinition) {
             if (Object.prototype.hasOwnProperty.call(enabledDynamicArgBlocksInfo, opcode)) {
-                initExpandableBlock(runtime, blockDefinition, enabledDynamicArgBlocksInfo[opcode]);
+                initExpandableBlock.call(blockDefinition, runtime, blockDefinition, enabledDynamicArgBlocksInfo[opcode]);
             }
             return Reflect.set(target, opcode, blockDefinition);
         },
     });
 }
-function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, dynamicArgInfo: any) {
+function initExpandableBlock(this: SourceBlockTypeButScratch, runtime: Scratch, blockDefinition: SourceBlockTypeButScratch, dynamicArgInfo: any) {
     const { PlusSelectButton, PlusButton, MinusButton } = dynamicArgInfo.extInfo;
     const Blockly = getScratchBlocks(runtime);
     function getValue(value: any, i: any, defaultValue: any, valueWhenOutOfRange?: any) {
@@ -193,10 +195,10 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
     function getNextParamInc(this: any) {
         return getParamsIncPerClick.call(this, getAddClickCount.call(this, this.dynamicArgumentTypes_.length));
     }
-    const moveButtonToTheRightPlace = function (this: any) {
+    const moveButtonToTheRightPlace = function (this: SourceBlockTypeButScratch) {
         const showPlus = getNextParamInc.call(this) > 0;
         if (showPlus) {
-            this.getInput("PLUS").setVisible(true);
+            this.getInput("PLUS")?.setVisible(true);
             const { afterArg } = this.dynamicArgInfo_;
             if (afterArg) {
                 this.moveInputBefore("PLUS", afterArg);
@@ -205,7 +207,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
                 this.moveInputBefore("PLUS", null);
             }
         } else {
-            this.getInput("PLUS").setVisible(false);
+            this.getInput("PLUS")?.setVisible(false);
         }
         if (this.getInput("ENDTEXT")) this.moveInputBefore("ENDTEXT", "PLUS");
         const cnt = this.dynamicArgumentTypes_.length;
@@ -216,7 +218,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
             this.moveInputBefore("MINUS", "PLUS");
         }
     };
-    const orgInit = blockDefinition.init;
+    const orgInit = blockDefinition.init ?? (() => { });
     blockDefinition.init = function () {
         orgInit.call(this);
         this.dynamicArgumentIds_ = [];
@@ -232,9 +234,9 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
         if (endTxt !== "") this.appendDummyInput("ENDTEXT").appendField(endTxt, "ENDTEXT");
         this.appendDummyInput("PLUS").appendField(this.plusButton_);
         if (afterArg) {
-            const plusInput = this.getInput("PLUS");
-            const endTxtInput = this.getInput("ENDTEXT");
-            const afterArgInput = this.getInput(afterArg);
+            const plusInput = this.getInput("PLUS") as Input;
+            const endTxtInput = this.getInput("ENDTEXT") as Input;
+            const afterArgInput = this.getInput(afterArg) as Input;
             const plusIndex = this.inputList.indexOf(plusInput);
             const endTxtIndex = this.inputList.indexOf(endTxtInput);
             const afterArgIndex = this.inputList.indexOf(afterArgInput);
@@ -248,7 +250,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
             }
         }
     };
-    blockDefinition.customContextMenu = function (contextMenu: any) {
+    blockDefinition.customContextMenu = function (contextMenu) {
         this.dynamicArgOptionalTypes_.forEach((i: AcceptedInputType) =>
             contextMenu.push({
                 text: translate(Blockly, InputTypeOptionsLabel[i]),
@@ -263,7 +265,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
         if (argumentType === "number" || argumentType === "string") {
             const blockType = argumentType === "number" ? "math_number" : "text";
             Blockly.Events.disable();
-            const newBlock = this.workspace.newBlock(blockType);
+            const newBlock = this.workspace.newBlock(blockType) as SourceBlockTypeButScratch;
             try {
                 if (argumentType === "number") {
                     newBlock.setFieldValue(defaultValue, "NUM");
@@ -281,7 +283,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
             if (Blockly.Events.isEnabled()) {
                 Blockly.Events.fire(new Blockly.Events.BlockCreate(newBlock));
             }
-            newBlock.outputConnection.connect(input.connection);
+            newBlock.outputConnection?.connect(input.connection);
         }
     };
     blockDefinition.mutationToDom = function () {
@@ -290,28 +292,27 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
         container.setAttribute("dynamicargtypes", JSON.stringify(this.dynamicArgumentTypes_));
         return container;
     };
-    blockDefinition.domToMutation = function (xmlElement: HTMLElement) {
+    blockDefinition.domToMutation = function (xmlElement: Element) {
         this.dynamicArgumentIds_ = JSON.parse(xmlElement.getAttribute("dynamicargids") || "[]");
         this.dynamicArgumentTypes_ = JSON.parse(xmlElement.getAttribute("dynamicargtypes") || "[]");
         this.updateDisplay_();
     };
     blockDefinition.addDynamicArg = function (type: any) {
-        const oldMutationDom = this.mutationToDom();
+        const oldMutationDom = this.mutationToDom?.call(this);
         const oldMutation = oldMutationDom && Blockly.Xml.domToText(oldMutationDom);
         Blockly.Events.setGroup(true);
         let index = 0;
         const lastArgName = this.dynamicArgumentIds_.slice(-1)[0];
         if (lastArgName) {
-            [index] = lastArgName.match(/\d+/g);
+            index = Number((lastArgName.match(/\d+/g) ?? [])[0]);
         }
-        index = Number(index);
         const cnt = getNextParamInc.call(this);
         for (let i = 0; i < cnt; i++) {
             this.dynamicArgumentIds_.push(`DYNAMIC_ARGS${index + i + 1}`);
             this.dynamicArgumentTypes_.push(type);
         }
         this.updateDisplay_();
-        const newMutationDom = this.mutationToDom();
+        const newMutationDom = this.mutationToDom?.call(this);
         const newMutation = newMutationDom && Blockly.Xml.domToText(newMutationDom);
         if (oldMutation !== newMutation) {
             Blockly.Events.fire(new Blockly.Events.BlockChange(this, "mutation", null, oldMutation, newMutation));
@@ -320,7 +321,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
     };
     blockDefinition.removeDynamicArg = function (id: string) {
         Blockly.Events.setGroup(true);
-        const oldMutationDom = this.mutationToDom();
+        const oldMutationDom = this.mutationToDom?.call(this);
         const oldMutation = oldMutationDom && Blockly.Xml.domToText(oldMutationDom);
         const matches = id.match(/^([^\d]+)(\d+)$/) || [];
         const name = matches[1];
@@ -334,7 +335,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
             this.removeInput(curId);
         });
         this.updateDisplay_();
-        const newMutationDom = this.mutationToDom();
+        const newMutationDom = this.mutationToDom?.call(this);
         const newMutation = newMutationDom && Blockly.Xml.domToText(newMutationDom);
         if (oldMutation !== newMutation) {
             Blockly.Events.fire(new Blockly.Events.BlockChange(this, "mutation", null, oldMutation, newMutation));
@@ -371,7 +372,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
         }
     };
     blockDefinition.disconnectDynamicArgBlocks_ = function () {
-        const connectionMap: Record<string, any> = {};
+        const connectionMap:ConnectionMapper = {};
         for (let i = 0; this.inputList[i]; i++) {
             const input = this.inputList[i];
             if (input.connection && /^DYNAMIC_ARGS\d+$/.test(input.name)) {
@@ -411,7 +412,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
             input.fieldRow.findLast((it: any) => it instanceof Blockly.FieldLabel)?.setText(txt);
         }
     }
-    blockDefinition.createAllDynamicArgInputs_ = function (connectionMap: any) {
+    blockDefinition.createAllDynamicArgInputs_ = function (this: SourceBlockTypeButScratch, connectionMap: any) {
         const num = this.dynamicArgumentTypes_.length;
         const { endText, joinCh, afterArg } = this.dynamicArgInfo_;
         updatePreText(this, num);
@@ -448,7 +449,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
             }
         }
     };
-    blockDefinition.populateArgument_ = function (type: any, connectionMap: any, id: string, input: any, i: number) {
+    blockDefinition.populateArgument_ = function (type: any, connectionMap: any, id: string, input, i) {
         let oldBlock = null;
         let oldShadow = null;
         if (connectionMap && id in connectionMap) {
@@ -458,8 +459,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
         }
         const getDefaultValue = (id: string, i: number) => {
             const { defaultValues } = this.dynamicArgInfo_;
-            const type = typeof defaultValues;
-            if (type === "function") return defaultValues(i, id);
+            if (typeof defaultValues === "function") return defaultValues(i, id);
             if (Array.isArray(defaultValues)) {
                 const len = defaultValues.length;
                 if (i < len - 1) return defaultValues[i];
@@ -473,7 +473,7 @@ function initExpandableBlock(this: any, runtime: Scratch, blockDefinition: any, 
             oldBlock.outputConnection.connect(input.connection);
             if (type !== "bool") {
                 const shadowDom = oldShadow || this.buildShadowDom_(type);
-                input.connection.setShadowDom(shadowDom);
+                input.connection?.setShadowDom(shadowDom);
             }
         } else {
             this.attachShadow_(input, type, getDefaultValue(id, i));
@@ -517,7 +517,7 @@ export function getDynamicArgKeys(args: Record<string, any>): string[] {
 };
 export function getDynamicArgs(args: Record<string, any>): string[] {
     return getDynamicArgKeys(args).map(key => args[key]);
-}
+};
 export function getDynamicArgCount(args: Record<string, any>) {
     return getDynamicArgKeys(args).length;
 };
