@@ -228,7 +228,7 @@ export type SourceBlockTypeButScratch = Blockly.Block & {
     plusButton_: Blockly.FieldImage;
     minusButton_: Blockly.FieldImage;
     customContextMenu: (menu: any) => void;
-    attachShadow_: (a: any, b: any, c: any) => void;
+    attachShadow_: (a: any, b: any, c: any, d?: any) => void;
     addDynamicArg: (id: AcceptedInputType) => void;
     removeDynamicArg: (id: string) => void
     disconnectDynamicArgBlocks_: () => ConnectionMapper;

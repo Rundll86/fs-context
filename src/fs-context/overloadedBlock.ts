@@ -1,6 +1,7 @@
 import cycleButton from "./icons/cycleButton.svg";
-import type { Scratch, ExtensionPlain, BlocklyType, SourceBlockTypeButScratch, AllFunction } from "@framework/internal";
+import type { Scratch, ExtensionPlain, BlocklyType, SourceBlockTypeButScratch, AllFunction, AcceptedInputType } from "@framework/internal";
 import { TextParser } from "./tools";
+import { Connection, Input } from "blockly";
 
 function hijack(fn: AllFunction) {
     const _orig = Function.prototype.apply;
@@ -73,7 +74,7 @@ function initOverloadedBlock(runtime: Scratch, blockDefinition: SourceBlockTypeB
         this.appendDummyInput("SWITCH").appendField(new SwitchButton());
         this.setOverload(this.currentOverload_);
     };
-    blockDefinition.attachShadow_ = function (input: any, argumentType: any, defaultValue = "") {
+    blockDefinition.attachShadow_ = function (input: Input, argumentType: AcceptedInputType, defaultValue = "", visible = true) {
         if (argumentType === "number" || argumentType === "string") {
             const blockType = argumentType === "number" ? "math_number" : "text";
             Blockly.Events.disable();
@@ -95,7 +96,7 @@ function initOverloadedBlock(runtime: Scratch, blockDefinition: SourceBlockTypeB
             if (Blockly.Events.isEnabled()) {
                 Blockly.Events.fire(new Blockly.Events.BlockCreate(newBlock));
             }
-            newBlock.outputConnection?.connect(input.connection);
+            newBlock.outputConnection?.connect(input.connection as Connection);
         }
     };
     blockDefinition.setOverload = function (overload: string) {
@@ -106,9 +107,10 @@ function initOverloadedBlock(runtime: Scratch, blockDefinition: SourceBlockTypeB
             }
         });
         const overloadLabelInput = this.appendValueInput("$overloadIndex");
-        this.attachShadow_(overloadLabelInput, "number", overloads.indexOf(overload).toString());
+        this.attachShadow_(overloadLabelInput, "number", overloads.indexOf(overload).toString(), false);
         overloadLabelInput.setVisible(false);
         const parts = TextParser.parsePart(overload);
+        console.log(parts);
         parts.forEach((part, index) => {
             if (part.type === "text") {
                 this.appendDummyInput(`TEXT${index}`).appendField(part.content);

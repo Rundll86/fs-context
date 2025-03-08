@@ -131,7 +131,7 @@ export class Block<O extends Extension = Extension> {
                 if (arg.type === "text") {
                     result += arg.content;
                 } else if (!arg.dyConfig) {
-                    result += `[${arg.content}]`;
+                    result += `[${arg.content}:${arg.inputType}=${arg.value}]`;
                 }
             }
             results.push(result);
