@@ -27,7 +27,11 @@ FS-Context是一个易用的**TypeScript**上下文，用于更优雅的开发�
 因此，本项目旨在提供一些*TS类型提示与工具集*，同时将不同平台加载拓展/获取vm等频繁且常用的操作封装，开发者不需要重复制造轮子，可以专注于**积木逻辑**的开发。
 
 ## 对比
-**TurboWarp**
+（点击查看）
+<details>
+<summary>案例1：实现四则运算</summary>
+
+> TurboWarp
 ```js
 class MyExtension {
     getInfo() {
@@ -88,7 +92,7 @@ class MyExtension {
 }
 Scratch.extensions.register(new MyExtension());
 ```
-**FS-Context**
+> FS-Context
 ```ts
 import { Extension, BlockType, Menu } from "@framework/structs";
 export default class MyExtension extends Extension {
@@ -109,6 +113,119 @@ export default class MyExtension extends Extension {
     }
 };
 ```
+</details>
+
+<details>
+<summary>案例2：实现三维向量乘积运算</summary>
+
+> TurboWarp
+```js
+class MyExtension {
+    parseVector(data) {
+        const part = data.split(" ");
+        part.push(0);
+        part.push(0);
+        return [
+            Scratch.Cast.toNumber(part[0]),
+            Scratch.Cast.toNumber(part[1]),
+            Scratch.Cast.toNumber(part[2])
+        ];
+    }
+    getInfo() {
+        return {
+            id: "myextension",
+            name: "My Extension",
+            blocks: [
+                {
+                    opcode: "crossVector",
+                    text: "Product [a] cross [b]",
+                    arguments: {
+                        a: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: "0 0"
+                        },
+                        b: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: "0 0"
+                        }
+                    },
+                    blockType: Scratch.BlockType.REPORTER
+                },
+                {
+                    opcode: "dotVector",
+                    text: "Product [a] dot [b]",
+                    arguments: {
+                        a: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: "0 0"
+                        },
+                        b: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: "0 0"
+                        }
+                    },
+                    blockType: Scratch.BlockType.REPORTER
+                }
+            ]
+        }
+    }
+    crossVector(args) {
+        const v1 = this.parseVector(args.a);
+        const v2 = this.parseVector(args.a);
+        return [
+            v1[1] * v2[2] - v1[2] * v2[1],
+            v1[2] * v2[0] - v1[0] * v2[2],
+            v1[0] * v2[1] - v1[1] * v2[0]
+        ];
+    }
+    dotVector(args) {
+        const v1 = this.parseVector(args.a);
+        const v2 = this.parseVector(args.a);
+        return v1.map((value, index) => value * v2[index]).reduce((sum, current) => sum + current, 0);
+    }
+}
+Scratch.extensions.register(new MyExtension());
+```
+> FS-Context
+```ts
+import { Extension, BlockType, Menu } from "@framework/structs";
+export default class MyExtension extends Extension {
+    id = "myextension";
+    name = "My Extension";
+    loaders = {
+        vector: {
+            load(src: string): [number, number, number] {
+                const parts: (number | string)[] = src.split(" ");
+                parts.push(0);
+                parts.push(0);
+                return [
+                    Scratch.Cast.toNumber(parts[0]),
+                    Scratch.Cast.toNumber(parts[1]),
+                    Scratch.Cast.toNumber(parts[2])
+                ];
+            }
+        }
+    };
+    @BlockType.Reporter("Product [a:vector=0 0] cross [b:vector=0 0]")
+    cross({ a, b }: { a: number[], b: number[] }) {
+        const v1 = a;
+        const v2 = b;
+        return [
+            v1[1] * v2[2] - v1[2] * v2[1],
+            v1[2] * v2[0] - v1[0] * v2[2],
+            v1[0] * v2[1] - v1[1] * v2[0]
+        ];
+    }
+    @BlockType.Reporter("Product [a:vector=0 0] dot [b:vector=0 0]")
+    dot({ a, b }: { a: number[], b: number[] }) {
+        const v1 = a;
+        const v2 = b;
+        return v1.map((value, index) => value * v2[index]).reduce((sum, current) => sum + current, 0);
+    }
+};
+```
+</details>
+
 不仅体积大量减少的同时也利用了许多最新的语言特性，让源代码更已读。
 # 完整文档
 [GithubIO](https://rundll86.github.io/fs-context)
