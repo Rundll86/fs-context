@@ -8,6 +8,9 @@ const WebpackDevServer = require("webpack-dev-server");
  * @param {string[]} cmd 
  */
 async function run(cmd) {
+    if (typeof cmd === "string") {
+        cmd = cmd.split(" ");
+    };
     return new Promise(resolve => {
         console.log(`Running: ${cmd.filter(Boolean).map(e => e.includes(" ") ? '"' + e + '"' : e).join(" ")}`);
         child_process.spawn("powershell", cmd.filter(Boolean), {
@@ -15,15 +18,21 @@ async function run(cmd) {
         }).addListener("exit", e => resolve(e));
     });
 };
-function checkTenToOne(args) {
-    return args.map(arg => {
-        if (arg.startsWith('+') && !arg.match(/^\+\d/)) {
-            return `-${arg.slice(1)}`;
-        };
-        return arg;
+async function buildWebpack(config) {
+    return new Promise(resolve => {
+        let compiler = webpack({ ...config, stats: "none" });
+        compiler.run((err) => {
+            if (err) {
+                console.error(err);
+            };
+            setTimeout(() => {
+                compiler = null;
+                resolve();
+            }, 100);
+        });
     });
 };
-program.description("FS-Context project controller");
+program.description("FS-Context project manager");
 program.command("init")
     .description("init workspace, build webpack config files")
     .alias("setup")
@@ -36,40 +45,49 @@ const buildCommand = program.command("build")
 buildCommand.command("extension")
     .description("build extension as production environment")
     .alias("ext")
-    .action(() => {
+    .action(async () => {
         console.log("Building extension...");
         const extensionConfig = require("./config/webpack/generated/webpack/extension");
-        webpack({
+        await buildWebpack({
             ...extensionConfig.default,
             mode: "production"
-        }).compile(err => {
-            if (err) {
-                console.error(err);
-            };
-            console.log("Done!");
         });
     });
 buildCommand.command("waterbox")
     .description("build WaterBox UI as production environment")
     .alias("ui")
-    .action(() => {
+    .action(async () => {
         console.log("Building UI...");
         const waterboxConfig = require("./config/webpack/generated/webpack/waterbox");
-        webpack({
+        await buildWebpack({
             ...waterboxConfig.default,
             mode: "production"
-        }).compile(err => {
-            if (err) {
-                console.error(err);
-            };
-            console.log("Done!");
         });
     });
 buildCommand.command("lib")
     .description("build node module as production environment")
-    .action(() => {
+    .action(async () => {
         console.log("Building node_module...")
-        child_process.execSync("tsc -p tsconfig.node.json", { stdio: "inherit" });
+        await run("tsc -p tsconfig.node.json");
+    });
+buildCommand.command("standalone")
+    .description("build standalone module as production environment")
+    .alias("sm")
+    .action(async () => {
+        console.log("Building standalone module...")
+        const standaloneConfig = require("./config/webpack/generated/webpack/standalone");
+        await buildWebpack({
+            ...standaloneConfig.default,
+            mode: "production"
+        });
+    });
+buildCommand.command("all")
+    .description("build all modules as production environment")
+    .action(async () => {
+        await program.parseAsync([process.argv[0], process.argv[1], "build", "extension"]);
+        await program.parseAsync([process.argv[0], process.argv[1], "build", "waterbox"]);
+        await program.parseAsync([process.argv[0], process.argv[1], "build", "lib"]);
+        await program.parseAsync([process.argv[0], process.argv[1], "build", "standalone"]);
     });
 const devCommand = program.command("dev")
     .description("about dev server");
@@ -114,4 +132,4 @@ program.command("lint")
             run(["eslint", option.target, option.fix ? "--fix" : null]);
         }
     );
-program.parse([process.argv[0], process.argv[1], ...checkTenToOne(process.argv.slice(2))]);
+program.parse();

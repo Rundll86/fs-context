@@ -48,7 +48,7 @@ const config: Configuration = {
         },
         extensions: [".ts", ".js"]
     },
-    stats: "errors-only"
+    stats: "errors-warnings"
 };
 export default config;
 export const devServer: DevServerConfiguration = {

@@ -1,7 +1,6 @@
-import { Input, inputTypes } from "blockly/core/inputs";
-import type { Block, DataStorer, Extension, Menu, Version } from "./structs";
+import type { Input } from "blockly";
 import type Blockly from "blockly";
-import { Connection, ContextMenuRegistry } from "blockly";
+import type { Block, DataStorer, Extension, Menu, Version } from "./structs";
 export class ArgumentPart {
     content: string;
     type: ArgumentPartType;
@@ -250,7 +249,6 @@ export type SourceBlockTypeButScratch = Blockly.Block & {
     overloads_: string[];
     currentOverload_: string;
     setOverload: (overload: string) => void;
-    method: (args: any) => any;
 };
 export type AllFunction = (...args: any[]) => any;
 export interface DynamicArgConfigPlainAllRequired {

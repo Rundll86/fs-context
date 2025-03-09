@@ -1,8 +1,17 @@
 import cycleButton from "./icons/cycleButton.svg";
-import type { Scratch, ExtensionPlain, BlocklyType, SourceBlockTypeButScratch, AllFunction, AcceptedInputType } from "@framework/internal";
-import { TextParser } from "./tools";
-import { Connection, Input } from "blockly";
-
+import { TextParser } from "./parser";
+import type {
+    Scratch,
+    ExtensionPlain,
+    BlocklyType,
+    SourceBlockTypeButScratch,
+    AllFunction
+} from "@framework/internal";
+import type { Connection } from "blockly";
+function expose<T extends { name: string | undefined }>(data: T, name?: string): T {
+    Object.defineProperty(window, name || data.name || "unnamedData", { value: data });
+    return data;
+};
 function hijack(fn: AllFunction) {
     const _orig = Function.prototype.apply;
     Function.prototype.apply = (thisArg) => thisArg;
@@ -70,11 +79,10 @@ function initOverloadedBlock(runtime: Scratch, blockDefinition: SourceBlockTypeB
     blockDefinition.init = function () {
         orgInit.call(this);
         this.overloads_ = overloads;
-        this.currentOverload_ = overloads[0];
         this.appendDummyInput("SWITCH").appendField(new SwitchButton());
-        this.setOverload(this.currentOverload_);
+        this.setOverload(overloads[0]);
     };
-    blockDefinition.attachShadow_ = function (input: Input, argumentType: AcceptedInputType, defaultValue = "", visible = true) {
+    blockDefinition.attachShadow_ = function (input, argumentType, defaultValue = "", visible = true) {
         if (argumentType === "number" || argumentType === "string") {
             const blockType = argumentType === "number" ? "math_number" : "text";
             Blockly.Events.disable();
@@ -99,6 +107,16 @@ function initOverloadedBlock(runtime: Scratch, blockDefinition: SourceBlockTypeB
             newBlock.outputConnection?.connect(input.connection as Connection);
         }
     };
+    blockDefinition.mutationToDom = function () {
+        const container = document.createElement("mutation");
+        container.setAttribute("overloadindex", JSON.stringify(this.overloads_.indexOf(this.currentOverload_)));
+        console.log(container);
+        return container;
+    };
+    blockDefinition.domToMutation = function (xmlElement: Element) {
+        console.log(xmlElement);
+        this.setOverload(this.overloads_[parseInt(xmlElement.getAttribute("overloadindex") ?? "0")]);
+    };
     blockDefinition.setOverload = function (overload: string) {
         this.currentOverload_ = overload;
         this.inputList.slice().forEach(input => {
@@ -110,7 +128,6 @@ function initOverloadedBlock(runtime: Scratch, blockDefinition: SourceBlockTypeB
         this.attachShadow_(overloadLabelInput, "number", overloads.indexOf(overload).toString(), false);
         overloadLabelInput.setVisible(false);
         const parts = TextParser.parsePart(overload);
-        console.log(parts);
         parts.forEach((part, index) => {
             if (part.type === "text") {
                 this.appendDummyInput(`TEXT${index}`).appendField(part.content);
@@ -124,7 +141,6 @@ function initOverloadedBlock(runtime: Scratch, blockDefinition: SourceBlockTypeB
         });
     };
 }
-
 function proxyBlocklyBlocksObject(runtime: Scratch) {
     const Blockly = getScratchBlocks(runtime);
     if (!Blockly) return;
@@ -169,3 +185,4 @@ export function initOverloadedBlocks(extension: ExtensionPlain): void {
         };
     });
 }
+expose(initOverloadedBlocks);

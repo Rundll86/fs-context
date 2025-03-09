@@ -6,5 +6,8 @@ export default {
     extension: {
         port: 19312,
         output: "extension"
+    },
+    standalone: {
+        output: "standalone"
     }
 };

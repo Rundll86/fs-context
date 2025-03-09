@@ -40,8 +40,9 @@ export namespace Extensions {
                     throw new ExtensionLoadError(`FSExtension "${ext.id}" requires ${i} to be at least ${ext.requires[i]}.`);
                 };
             };
-            ext.init(runtime);
-            ext.runtime = runtime;
+            const runtimeAssigned = Object.assign({}, window.ScratchWaterBoxed ?? window.Scratch, { runtime });
+            ext.init(runtimeAssigned);
+            ext.runtime = runtimeAssigned;
             if (!ext.allowSandboxed) {
                 ext.canvas = runtime?.renderer.canvas;
             };

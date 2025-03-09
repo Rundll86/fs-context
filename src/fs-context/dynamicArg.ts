@@ -20,10 +20,14 @@ import type {
     SourceBlockTypeButScratch,
     ConnectionMapper
 } from "@framework/internal";
-import { Block, Connection, Input } from "blockly";
+import type { Input } from "blockly";
 const enabledDynamicArgBlocksInfo: Record<string | symbol, any> = {};
 const extInfo: Record<string | symbol, any> = {};
 let proxingBlocklyBlocks = false;
+function expose<T extends { name: string | undefined }>(data: T, name?: string): T {
+    Object.defineProperty(window, name || data.name || "unnamedData", { value: data });
+    return data;
+};
 function hijack(fn: AllFunction) {
     const _orig = Function.prototype.apply;
     Function.prototype.apply = (thisArg) => thisArg;
@@ -372,7 +376,7 @@ function initExpandableBlock(this: SourceBlockTypeButScratch, runtime: Scratch, 
         }
     };
     blockDefinition.disconnectDynamicArgBlocks_ = function () {
-        const connectionMap:ConnectionMapper = {};
+        const connectionMap: ConnectionMapper = {};
         for (let i = 0; this.inputList[i]; i++) {
             const input = this.inputList[i];
             if (input.connection && /^DYNAMIC_ARGS\d+$/.test(input.name)) {
@@ -511,13 +515,16 @@ export function getDynamicArgKeys(args: Record<string, any>): string[] {
     const argNameSuffix = "DYNAMIC_ARGS";
     return Object.keys(args)
         .filter((key) => key.startsWith(argNameSuffix))
-        .filter(key => Number.isInteger(Number(key.replace(argNameSuffix, "") || undefined)))
-        .sort((a, b) => Number(a.replace(argNameSuffix, "")) - Number(b.replace(argNameSuffix, "")))
-        .filter((key, index) => Number(key.replace(argNameSuffix, "")) === index + 1);
+        .map((key) => key.replace(argNameSuffix, ""))
+        .map((key) => Number(key))
+        .filter((key) => !isNaN(key))
+        .sort((a, b) => a - b)
+        .filter((key, index) => key === index)
+        .map((key) => `${argNameSuffix}${key}`);
 };
 export function getDynamicArgs(args: Record<string, any>): string[] {
     return getDynamicArgKeys(args).map(key => args[key]);
 };
-export function getDynamicArgCount(args: Record<string, any>) {
-    return getDynamicArgKeys(args).length;
-};
+expose(initExpandableBlocks);
+expose(getDynamicArgKeys);
+expose(getDynamicArgs);

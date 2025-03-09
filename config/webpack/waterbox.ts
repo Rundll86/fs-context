@@ -10,7 +10,7 @@ export default merge({
     entry: "@framework/ui/waterbox.ts",
     output: {
         filename: `${serverConfig.waterBox.output}.dist.js`,
-        path: path.resolve(__dirname, `dist/${serverConfig.waterBox.output}`),
+        path: path.resolve(`dist/${serverConfig.waterBox.output}`),
         clean: true
     },
     module: {

@@ -9,7 +9,7 @@ export default merge({
     entry: "@framework/entry.ts",
     output: {
         filename: `${serverConfig.extension.output}.dist.js`,
-        path: path.resolve(__dirname, `dist/${serverConfig.extension.output}`),
+        path: path.resolve(`dist/${serverConfig.extension.output}`),
         clean: true
     },
     module: {
