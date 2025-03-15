@@ -74,6 +74,7 @@ export namespace TextParser {
         };
     }
     export function parsePart(text: string): ArgumentPart[] {
+        if (!text) return [];
         const result: ArgumentPart[] = [];
         const parts = split(text);
         parts.text.forEach((item, index) => {

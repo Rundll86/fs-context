@@ -37,7 +37,7 @@ function runMethod(ele: HTMLDivElement, opcode: string) {
         if (data instanceof Promise) {
             data.then(e => console.log(e));
         } else {
-            console.log(data);
+            console.log("Return:", data);
         };
     };
 };

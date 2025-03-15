@@ -40,7 +40,10 @@ export namespace Extensions {
                     throw new ExtensionLoadError(`FSExtension "${ext.id}" requires ${i} to be at least ${ext.requires[i]}.`);
                 };
             };
-            const runtimeAssigned = Object.assign({}, window.ScratchWaterBoxed ?? window.Scratch, { runtime });
+            const runtimeAssigned = Object.assign({},
+                window.ScratchWaterBoxed ?? window.Scratch ?? {},
+                runtime?.vm.runtime ?? {},
+                { runtime });
             ext.init(runtimeAssigned);
             ext.runtime = runtimeAssigned;
             if (!ext.allowSandboxed) {
@@ -62,9 +65,10 @@ export namespace Extensions {
                     opcode: block.opcode,
                     blockType: block.type,
                     text: block.text,
-                    arguments: args
+                    arguments: args,
+                    hideFromPalette: block.hidden
                 };
-                if (block.overloads) {
+                if (block.overloads.length > 0) {
                     currentBlock.overloads = block.overloadedText;
                 };
                 for (const argIndex in block.plainArguments) {
@@ -136,7 +140,7 @@ export namespace Extensions {
                         color3: ext.colors.menu as HexColorString
                     };
                 },
-                runtime
+                runtime: ext.runtime
             };
             ext.blocks.forEach(block => {
                 function _processArg(arg: Record<string, any>) {
@@ -195,15 +199,15 @@ export namespace Extensions {
                 });
                 result[block.opcode] = (arg: Record<string, any>) => {
                     _processArg(arg);
-                    let { $overloadIndex } = arg;
+                    const { $overloadIndex } = arg;
                     if ($overloadIndex !== undefined) delete arg.$overloadIndex;
                     const result = block.method.call(ext, arg, $overloadIndex ?? 0);
                     if (result instanceof Promise) {
-                        return result.then((res) => {
-                            return JSON.stringify(res);
+                        return result.then((result) => {
+                            return typeof result === "string" ? result : JSON.stringify(result);
                         }).catch(err => { throw err; });
                     } else {
-                        return JSON.stringify(result);
+                        return typeof result === "string" ? result : JSON.stringify(result);
                     };
                 };
             });

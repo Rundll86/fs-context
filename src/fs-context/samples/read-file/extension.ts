@@ -10,6 +10,6 @@ export default class ReadFile extends Extension {
         return {
             filename: file.name,
             dataurl: content
-        }
+        };
     }
 };

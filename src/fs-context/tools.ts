@@ -209,5 +209,11 @@ export namespace Unnecessary {
                 .result
         );
     }
+    export function getConstructor<T>(object: object) {
+        return object.constructor as T;
+    }
+    export function placehold<T>(data: T): T {
+        return data;
+    };
 }
 export * from "./parser";

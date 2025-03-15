@@ -40,7 +40,7 @@ export interface ScratchWaterBoxed extends Scratch {
     currentCatchErrors: string[];
     languageStore: Record<string, LanguageStored>;
 }
-export type BlockTypePlain = "command" | "reporter" | "bool";
+export type BlockTypePlain = "command" | "reporter" | "Boolean" | "hat" | "label";
 export type ExtractField<A extends (string | ArgumentDefine)[]> = {
     [K in keyof A as A[K] extends ArgumentDefine<infer R> ? R : never]: any;
 }
@@ -178,6 +178,7 @@ export interface BlockPlain {
     blockType: BlockTypePlain;
     dynamicArgsInfo?: DynamicArgConfigPlain;
     overloads?: string[];
+    hideFromPalette?: boolean;
 }
 export type ExtensionPlain = {
     getInfo: () => ExtensionInfo;

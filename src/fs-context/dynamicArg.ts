@@ -24,10 +24,6 @@ import type { Input } from "blockly";
 const enabledDynamicArgBlocksInfo: Record<string | symbol, any> = {};
 const extInfo: Record<string | symbol, any> = {};
 let proxingBlocklyBlocks = false;
-function expose<T extends { name: string | undefined }>(data: T, name?: string): T {
-    Object.defineProperty(window, name || data.name || "unnamedData", { value: data });
-    return data;
-};
 function hijack(fn: AllFunction) {
     const _orig = Function.prototype.apply;
     Function.prototype.apply = (thisArg) => thisArg;
@@ -525,6 +521,24 @@ export function getDynamicArgKeys(args: Record<string, any>): string[] {
 export function getDynamicArgs(args: Record<string, any>): string[] {
     return getDynamicArgKeys(args).map(key => args[key]);
 };
-expose(initExpandableBlocks);
-expose(getDynamicArgKeys);
-expose(getDynamicArgs);
+declare let initExpandableBlocksExposed: (extension: ExtensionPlain) => void;
+try {
+    initExpandableBlocksExposed = initExpandableBlocks;
+    initExpandableBlocksExposed.bind(null);
+} catch {
+    console.warn("initExpandableBlocks() exposer isn't created, skipping");
+};
+declare let getDynamicArgKeysExposed: (extension: ExtensionPlain) => void;
+try {
+    getDynamicArgKeysExposed = getDynamicArgKeys;
+    getDynamicArgKeysExposed.bind(null);
+} catch {
+    console.warn("getDynamicArgKeys() exposer isn't created, skipping");
+};
+declare let getDynamicArgsExposed: (extension: ExtensionPlain) => void;
+try {
+    getDynamicArgsExposed = getDynamicArgs;
+    getDynamicArgsExposed.bind(null);
+} catch {
+    console.warn("getDynamicArgs() exposer isn't created, skipping");
+};

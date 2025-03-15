@@ -19,7 +19,7 @@ import type {
 } from "./internal";
 import { ArgumentPart } from "./internal";
 import { MenuParser, TextParser, Unnecessary } from "./tools";
-import { MissingError, OnlyInstanceWarn } from "./exceptions";
+import { GeneratedFailed, MissingError, OnlyInstanceWarn } from "./exceptions";
 import md5 from "md5";
 export class Extension {
     id: string = "example-extension";
@@ -108,6 +108,7 @@ export class Block<O extends Extension = Extension> {
     parts: ArgumentPart[] = [];
     overloads: ArgumentPart[][] = [];
     type: BlockTypePlain = "command";
+    hidden: boolean = false;
     private _opcode: string = "";
     get opcode(): string {
         return this._opcode || md5(this.text || this.overloadedText[0]);
@@ -293,22 +294,44 @@ export class Version {
     }
 }
 export namespace BlockType {
-    export function Plain(type: BlockTypePlain, text: string) {
+    export function hidden(target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
+        const parent = Unnecessary.getConstructor<typeof Extension>(target);
+        const myself = parent.blockDecorated[parent.blockDecorated.length - 1];
+        if (myself) {
+            if (descriptor.value === myself.method) {
+                myself.hidden = true;
+            } else {
+                throw new GeneratedFailed(`Cannot hide ${propertyKey}, unmatched block implement.`);
+            };
+        } else throw new GeneratedFailed(`Cannot hide ${propertyKey}, block instance isn't found.`);;
+    }
+    export function Plain(type: BlockTypePlain, text: string | string[]) {
         return function (target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
             const block = new Block({
                 opcode: propertyKey,
                 type,
                 method: descriptor.value
             });
-            const parent: typeof Extension = target.constructor as typeof Extension;
-            block.parts = TextParser.parsePart(text);
+            const parent = Unnecessary.getConstructor<typeof Extension>(target);
+            if (Array.isArray(text)) {
+                block.overloads = text.map(e => TextParser.parsePart(e));
+            } else block.parts = TextParser.parsePart(text);
             parent.blockDecorated.push(block);
         };
     }
-    export function Command(text: string) {
+    export function Command(text: string | string[]) {
         return Plain("command", text);
     }
-    export function Reporter(text: string) {
+    export function Reporter(text: string | string[]) {
         return Plain("reporter", text);
+    }
+    export function Boolean(text: string | string[]) {
+        return Plain("Boolean", text);
+    }
+    export function Hat(text: string | string[]) {
+        return Plain("hat", text);
+    }
+    export function Label(text: string | string[]) {
+        return Plain("label", text);
     }
 }

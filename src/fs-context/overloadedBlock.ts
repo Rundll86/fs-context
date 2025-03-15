@@ -8,10 +8,6 @@ import type {
     AllFunction
 } from "@framework/internal";
 import type { Connection } from "blockly";
-function expose<T extends { name: string | undefined }>(data: T, name?: string): T {
-    Object.defineProperty(window, name || data.name || "unnamedData", { value: data });
-    return data;
-};
 function hijack(fn: AllFunction) {
     const _orig = Function.prototype.apply;
     Function.prototype.apply = (thisArg) => thisArg;
@@ -65,6 +61,7 @@ function createSwitchButton(Blockly: BlocklyType) {
             const currentIndex = overloads.indexOf(this.sourceBlock_.currentOverload_);
             const nextIndex = (currentIndex + 1) % overloads.length;
             this.sourceBlock_.setOverload(overloads[nextIndex]);
+            return e;
         }
     }
     return SwitchButton;
@@ -73,7 +70,6 @@ function createSwitchButton(Blockly: BlocklyType) {
 function initOverloadedBlock(runtime: Scratch, blockDefinition: SourceBlockTypeButScratch, overloads: string[]) {
     const Blockly = getScratchBlocks(runtime);
     const SwitchButton = createSwitchButton(Blockly);
-
     const orgInit = blockDefinition.init;
     if (!orgInit) return;
     blockDefinition.init = function () {
@@ -82,7 +78,7 @@ function initOverloadedBlock(runtime: Scratch, blockDefinition: SourceBlockTypeB
         this.appendDummyInput("SWITCH").appendField(new SwitchButton());
         this.setOverload(overloads[0]);
     };
-    blockDefinition.attachShadow_ = function (input, argumentType, defaultValue = "", visible = true) {
+    blockDefinition.attachShadow_ = function (input, argumentType, defaultValue = "") {
         if (argumentType === "number" || argumentType === "string") {
             const blockType = argumentType === "number" ? "math_number" : "text";
             Blockly.Events.disable();
@@ -110,11 +106,9 @@ function initOverloadedBlock(runtime: Scratch, blockDefinition: SourceBlockTypeB
     blockDefinition.mutationToDom = function () {
         const container = document.createElement("mutation");
         container.setAttribute("overloadindex", JSON.stringify(this.overloads_.indexOf(this.currentOverload_)));
-        console.log(container);
         return container;
     };
     blockDefinition.domToMutation = function (xmlElement: Element) {
-        console.log(xmlElement);
         this.setOverload(this.overloads_[parseInt(xmlElement.getAttribute("overloadindex") ?? "0")]);
     };
     blockDefinition.setOverload = function (overload: string) {
@@ -178,6 +172,7 @@ export function initOverloadedBlocks(extension: ExtensionPlain): void {
         if (block.overloads) {
             extInfo[extension.getInfo().id] = extension.getInfo().blocks.reduce((acc, cur) => {
                 if (cur.overloads) {
+                    console.log(cur);
                     acc[cur.opcode] = cur.overloads;
                 };
                 return acc;
@@ -185,4 +180,10 @@ export function initOverloadedBlocks(extension: ExtensionPlain): void {
         };
     });
 }
-expose(initOverloadedBlocks);
+declare let initOverloadedBlocksExposed: (e: ExtensionPlain) => void;
+try {
+    initOverloadedBlocksExposed = initOverloadedBlocks;
+    initOverloadedBlocksExposed.bind(null);
+} catch {
+    console.warn("initOverloadedBlocks() exposer isn't created, skipping");
+};

@@ -44,7 +44,7 @@ export default class RunGodotGame extends Extension {
             name: string
         } | null = null;
         let entryHtml: string | null = null;
-        for (let path in zip.files) {
+        for (const path in zip.files) {
             const file = zip.files[path];
             if (file.name === "gdgame.json") {
                 config = JSON.parse(await file.async("string"));
@@ -54,7 +54,7 @@ export default class RunGodotGame extends Extension {
             };
         };
         if (config && entryHtml) {
-            for (let path in zip.files) {
+            for (const path in zip.files) {
                 const file = zip.files[path];
                 if (files.map(e => path === config.name + "." + e).some(Boolean)) {
                     data[path] = await file.async("base64");
