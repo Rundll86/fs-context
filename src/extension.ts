@@ -27,7 +27,7 @@ export default class MyExtension extends Extension {
     }
     @BlockType.Boolean("随机返回[data:textarray]中的一个")
     randomReturn({ data }: { data: string[] }) {
-        return data[Random.randomInt(0, data.length - 1)];
+        return data[Random.integer(0, data.length - 1)];
     }
     @BlockType.hidden
     @BlockType.Command("这个积木已隐藏")

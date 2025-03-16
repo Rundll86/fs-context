@@ -319,7 +319,11 @@ export abstract class BlocklyInjector {
     public isAvailableBlock(blockInfo: BlockPlain): boolean {
         return !!blockInfo.opcode;
     }
-    public onGetInfo(originInfo: ExtensionInfo) {
+    public configMap(originBlock: BlockPlain): BlockPlain {
+        originBlock.text += "123456";
+        return originBlock;
+    }
+    public getInfo(originInfo: ExtensionInfo) {
         return originInfo;
     }
     public inject(block: BlocklyBlock, myInfo: BlockPlain): void {
@@ -339,11 +343,13 @@ export abstract class BlocklyInjector {
     }
     public start() {
         if (!this.blockly) return;
-        // const injector: BlocklyInjector = this;
         const originGetInfo = this.extension.getInfo.bind(this.extension);
         this.extension.getInfo = () => {
             const originInfo = originGetInfo();
-            return this.onGetInfo(originInfo) ?? originInfo;
+            originInfo.blocks = originInfo.blocks?.map(
+                block => this.isAvailableBlock(block) ? this.configMap(block) : block
+            ) ?? [];
+            return this.getInfo(originInfo) ?? originInfo;
         };
         this.blockly.Blocks = new Proxy(this.blockly.Blocks, {
             set: (target, opcode: string, definition: BlocklyBlock) => {

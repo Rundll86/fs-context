@@ -3,7 +3,8 @@ import {
     ElementContext,
     GlobalResourceMachine,
     HexColorString,
-    InputType
+    InputType,
+    WritableKeys
 } from "./internal";
 import { DataStorer, Extension } from "./structs";
 import { ExtensionLoadError, MissingError, OverwriteWarn, SyntaxError } from "./exceptions";
@@ -33,20 +34,20 @@ export namespace GlobalContext {
     };
 }
 export namespace Random {
-    export function randomInt(min: number, max: number) {
+    export function integer(min: number, max: number) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
-    export function randomFloat(min: number, max: number) {
+    export function float(min: number, max: number) {
         return Math.random() * (max - min) + min;
     }
-    export function randomString(length: number, chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') {
+    export function string(length: number, chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') {
         let result = '';
         for (let i = 0; i < length; i++) {
             result += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         return result;
     }
-    export function randomColor(): HexColorString {
+    export function color(): HexColorString {
         return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
     }
 }
@@ -95,7 +96,7 @@ export namespace DOM {
             }
         };
     }
-    export function createStageOverlay(extension: Extension): HTMLDivElement {
+    export function createStageOverlay<T extends keyof HTMLElementTagNameMap>(extension: Extension, tag: T = "div" as T): HTMLElement {
         if (extension.allowSandboxed) {
             throw new ExtensionLoadError("Cannot create stage overlay with a sandboxed extension.");
         };
@@ -103,9 +104,9 @@ export namespace DOM {
             throw new MissingError("Cannot find renderer canvas");
         };
         return extension.canvas.parentElement.appendChild(
-            DOM.elementTree("div")
+            DOM.elementTree(tag)
                 .class("fsc-overlay")
-                .attribute("id", `ext-${extension.id}`)
+                .attribute("id" as any, `ext-${extension.id}`)
                 .result
         );
     }
