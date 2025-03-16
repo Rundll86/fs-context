@@ -1,4 +1,5 @@
 import {
+    AllFunction,
     ElementContext,
     GlobalResourceMachine,
     HexColorString,
@@ -30,8 +31,26 @@ export namespace GlobalContext {
             throw new MissingError(`Data store "${id}" does not exist.`);
         };
     };
-};
-export namespace Unnecessary {
+}
+export namespace Random {
+    export function randomInt(min: number, max: number) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    export function randomFloat(min: number, max: number) {
+        return Math.random() * (max - min) + min;
+    }
+    export function randomString(length: number, chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') {
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+    export function randomColor(): HexColorString {
+        return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+    }
+}
+export namespace DOM {
     export function elementTree<T extends keyof HTMLElementTagNameMap>(
         tag: T,
         childs: ElementContext[] = []
@@ -76,22 +95,22 @@ export namespace Unnecessary {
             }
         };
     }
-    export function randomInt(min: number, max: number) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
+    export function createStageOverlay(extension: Extension): HTMLDivElement {
+        if (extension.allowSandboxed) {
+            throw new ExtensionLoadError("Cannot create stage overlay with a sandboxed extension.");
+        };
+        if (!extension.canvas || !extension.canvas.parentElement) {
+            throw new MissingError("Cannot find renderer canvas");
+        };
+        return extension.canvas.parentElement.appendChild(
+            DOM.elementTree("div")
+                .class("fsc-overlay")
+                .attribute("id", `ext-${extension.id}`)
+                .result
+        );
     }
-    export function randomFloat(min: number, max: number) {
-        return Math.random() * (max - min) + min;
-    }
-    export function randomString(length: number, chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') {
-        let result = '';
-        for (let i = 0; i < length; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return result;
-    }
-    export function randomColor(): HexColorString {
-        return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
-    }
+}
+export namespace LegacyParser {
     export function splitArgBoxPart(str: string, substrings: string[]) {
         const filteredSubstrings = [];
         for (let i = 0; i < str.length; i++) {
@@ -111,6 +130,8 @@ export namespace Unnecessary {
         const result = str.split(regex);
         return result;
     }
+}
+export namespace Color {
     export function hexToRgb(str: HexColorString): [number, number, number] {
         let hexs: any[] = [];
         const reg = /^#?[0-9A-Fa-f]{6}$/;
@@ -134,6 +155,8 @@ export namespace Unnecessary {
         }
         return `#${rgb.map((i) => i.toString(16).padStart(2, "0")).join('')}`;
     }
+}
+export namespace Cast {
     export function castInputType(inputType: InputType) {
         const inputTypeCastToScratch: any = {
             bool: "Boolean",
@@ -141,12 +164,32 @@ export namespace Unnecessary {
         };
         return Object.hasOwn(inputTypeCastToScratch, inputType) ? inputTypeCastToScratch[inputType] : inputType;
     }
+}
+export namespace OriginalState {
     export function isAsyncFunction(func: (...args: any[]) => any) {
         return func.constructor.name === "AsyncFunction";
     }
+    export function getConstructor<T>(object: object) {
+        return object.constructor as T;
+    }
+    export function placehold<T>(data: T): T {
+        return data;
+    }
+    export function hijack(fn: AllFunction) {
+        const _orig = Function.prototype.apply;
+        Function.prototype.apply = (thisArg) => thisArg;
+        const result = fn();
+        Function.prototype.apply = _orig;
+        return result;
+    }
+    export function getEventListener(e: AllFunction[]) {
+        return e instanceof Array ? e[e.length - 1] : e;
+    }
+}
+export namespace Binary {
     export async function uploadFile(accept: string = "*") {
         return new Promise<File>((resolve, reject) => {
-            const input = Unnecessary.elementTree("input").attribute("type", "file").attribute("accept", accept);
+            const input = DOM.elementTree("input").attribute("type", "file").attribute("accept", accept);
             input.result.addEventListener("change", () => {
                 if (input.result.files) {
                     resolve(input.result.files[0]);
@@ -195,25 +238,5 @@ export namespace Unnecessary {
     export function createObjectURL(data: BlobPart, type?: BlobPropertyBag): string {
         return URL.createObjectURL(new Blob([data], type ?? { type: "application/text" }));
     }
-    export function createStageOverlay(extension: Extension): HTMLDivElement {
-        if (extension.allowSandboxed) {
-            throw new ExtensionLoadError("Cannot create stage overlay with a sandboxed extension.");
-        };
-        if (!extension.canvas || !extension.canvas.parentElement) {
-            throw new MissingError("Cannot find renderer canvas");
-        };
-        return extension.canvas.parentElement.appendChild(
-            elementTree("div")
-                .class("fsc-overlay")
-                .attribute("id", `ext-${extension.id}`)
-                .result
-        );
-    }
-    export function getConstructor<T>(object: object) {
-        return object.constructor as T;
-    }
-    export function placehold<T>(data: T): T {
-        return data;
-    };
 }
 export * from "./parser";

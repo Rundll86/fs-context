@@ -1,6 +1,6 @@
 import { InputLoader } from "@framework/internal";
 import { BlockType, Extension } from "@framework/structs";
-import { Unnecessary } from "@framework/tools";
+import { Random } from "@framework/tools";
 export default class MyExtension extends Extension {
     id = "myextension";
     displayName = "My Extension";
@@ -27,7 +27,7 @@ export default class MyExtension extends Extension {
     }
     @BlockType.Boolean("随机返回[data:textarray]中的一个")
     randomReturn({ data }: { data: string[] }) {
-        return data[Unnecessary.randomInt(0, data.length - 1)];
+        return data[Random.randomInt(0, data.length - 1)];
     }
     @BlockType.hidden
     @BlockType.Command("这个积木已隐藏")

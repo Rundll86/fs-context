@@ -1,9 +1,10 @@
 import { ExtensionLoadError } from "@framework/exceptions";
-type LoaderConfig = import("@framework/internal").LoaderConfig;
+import type { LoaderConfig } from "@framework/internal";
+import Extension from "@samples/read-file/extension";
 const config: LoaderConfig = {
-    target: import("@src/extension"),
+    target: Extension,
     errorCatches: [Error, ExtensionLoadError],
     platform: ["TurboWarp"],
     mode: "debug"
 };
-export default { ...config };
+export default config;

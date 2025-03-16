@@ -81,7 +81,7 @@ function createButtons(Blockly: BlocklyType, plusImage = rightArrow, minusImage 
             super(src, width, height, undefined, undefined, false);
             this.initialized = false;
         }
-        init() {
+        override init() {
             super.init();
             if (!this.initialized) {
                 (this.getSvgRoot() as SVGElement).style.cursor = "pointer";
@@ -104,7 +104,7 @@ function createButtons(Blockly: BlocklyType, plusImage = rightArrow, minusImage 
         constructor() {
             super(defaultPlusSelectImage, 54, 32);
         }
-        onClick(e: PointerEvent) {
+        override onClick(e: PointerEvent) {
             const menuOptions = this.sourceBlock_.dynamicArgOptionalTypes_.map(i => ({
                 text: translate(Blockly, InputTypeOptionsLabel[i]),
                 enabled: true,
@@ -119,7 +119,7 @@ function createButtons(Blockly: BlocklyType, plusImage = rightArrow, minusImage 
         constructor() {
             super(plusImage);
         }
-        onClick() {
+        override onClick() {
             this.sourceBlock_.addDynamicArg(this.sourceBlock_.dynamicArgOptionalTypes_[0]);
         }
     }
@@ -127,7 +127,7 @@ function createButtons(Blockly: BlocklyType, plusImage = rightArrow, minusImage 
         constructor() {
             super(minusImage);
         }
-        onClick() {
+        override onClick() {
             const { dynamicArgumentIds_ } = this.sourceBlock_;
             this.sourceBlock_.removeDynamicArg(dynamicArgumentIds_[dynamicArgumentIds_.length - 1]);
         }
@@ -526,19 +526,19 @@ try {
     initExpandableBlocksExposed = initExpandableBlocks;
     initExpandableBlocksExposed.bind(null);
 } catch {
-    console.warn("initExpandableBlocks() exposer isn't created, skipping");
+    console.warn("initExpandableBlocks() exposer isn't created, skipping.");
 };
 declare let getDynamicArgKeysExposed: (extension: ExtensionPlain) => void;
 try {
     getDynamicArgKeysExposed = getDynamicArgKeys;
     getDynamicArgKeysExposed.bind(null);
 } catch {
-    console.warn("getDynamicArgKeys() exposer isn't created, skipping");
+    console.warn("getDynamicArgKeys() exposer isn't created, skipping.");
 };
 declare let getDynamicArgsExposed: (extension: ExtensionPlain) => void;
 try {
     getDynamicArgsExposed = getDynamicArgs;
     getDynamicArgsExposed.bind(null);
 } catch {
-    console.warn("getDynamicArgs() exposer isn't created, skipping");
+    console.warn("getDynamicArgs() exposer isn't created, skipping.");
 };

@@ -16,7 +16,7 @@ export default [
             "@typescript-eslint/no-explicit-any": "off",
             "indent": ["error", 4],
             "semi": ["error", "always"]
-        }
+        },
     },
     {
         files: ["**/*.cjs"],

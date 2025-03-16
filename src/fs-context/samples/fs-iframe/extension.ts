@@ -1,6 +1,6 @@
 import { ElementContext, Scratch } from "@framework/internal";
 import { Block, Collaborator, Extension, Translator, Version } from "@framework/structs";
-import { GlobalContext, Unnecessary } from "@framework/tools";
+import { DOM, GlobalContext } from "@framework/tools";
 import "./style.css";
 const translator = Translator.create("zh-cn", {
     name: "内嵌网页",
@@ -49,7 +49,7 @@ export default class FSIFrame extends Extension {
             if (document.getElementById(`fsiframe-${arg.$name}`)) return;
             const pos = parsePos(arg.$pos);
             const size = parsePos(arg.$size);
-            const iframe = Unnecessary.elementTree("iframe")
+            const iframe = DOM.elementTree("iframe")
                 .class("fsi-iframe")
                 .style("left", `${pos.x}px`)
                 .style("top", `${pos.y}px`)
@@ -166,5 +166,5 @@ function parsePos(text: string): Position {
 }
 const dataStore = GlobalContext.createDataStore(FSIFrame, {
     iframes: [] as ElementContext<HTMLIFrameElement>[],
-    rootBase: Unnecessary.elementTree("div").class("fsi-base")
+    rootBase: DOM.elementTree("div").class("fsi-base")
 });

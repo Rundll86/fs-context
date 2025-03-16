@@ -36,7 +36,7 @@ function createSwitchButton(Blockly: BlocklyType) {
             super(cycleButton, 25, 25, undefined, undefined, false);
             this.initialized = false;
         }
-        init() {
+        override init() {
             super.init();
             if (!this.initialized) {
                 const svg = this.getSvgRoot();
@@ -185,5 +185,5 @@ try {
     initOverloadedBlocksExposed = initOverloadedBlocks;
     initOverloadedBlocksExposed.bind(null);
 } catch {
-    console.warn("initOverloadedBlocks() exposer isn't created, skipping");
+    console.warn("initOverloadedBlocks() exposer isn't created, skipping.");
 };

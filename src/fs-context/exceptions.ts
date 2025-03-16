@@ -21,3 +21,4 @@ export const UncognizedError = createException("UncognizedError");
 export const MissingError = createException("MissingError");
 export const OnlyInstanceWarn = createException("OnlyInstanceWarn");
 export const OverwriteWarn = createException("OverwriteWarn");
+export const InjectionError = createException("InjectionError");

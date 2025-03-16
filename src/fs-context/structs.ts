@@ -15,12 +15,16 @@ import type {
     MenuDefine,
     InputLoader,
     ExtensionPlain,
-    CopyAsGenericsOfArray
+    CopyAsGenericsOfArray,
+    BlocklyType,
+    ExtensionInfo,
+    BlockPlain
 } from "./internal";
 import { ArgumentPart } from "./internal";
-import { MenuParser, TextParser, Unnecessary } from "./tools";
-import { GeneratedFailed, MissingError, OnlyInstanceWarn } from "./exceptions";
+import { Color, MenuParser, OriginalState, TextParser } from "./tools";
+import { GeneratedFailed, InjectionError, MissingError, OnlyInstanceWarn } from "./exceptions";
 import md5 from "md5";
+import type { Block as BlocklyBlock } from "blockly";
 export class Extension {
     id: string = "example-extension";
     displayName: string = "Example extension";
@@ -65,9 +69,9 @@ export class Extension {
     calcColor() {
         if (this.autoDeriveColors) {
             if (this.colors.theme) {
-                this.colors.block = Unnecessary.darken(this.colors.theme, 0);
-                this.colors.inputer = Unnecessary.darken(this.colors.theme, 0.15);
-                this.colors.menu = Unnecessary.darken(this.colors.theme, 0.3);
+                this.colors.block = Color.darken(this.colors.theme, 0);
+                this.colors.inputer = Color.darken(this.colors.theme, 0.15);
+                this.colors.menu = Color.darken(this.colors.theme, 0.3);
             } else {
                 throw new MissingError(`FSExtension "${this.id}" can auto derive colors but have no theme color.`);
             };
@@ -292,10 +296,76 @@ export class Version {
         if (a.patch < b.patch) return b;
         return a;
     }
+};
+export abstract class BlocklyInjector {
+    private extension: ExtensionPlain;
+    private runtime: Scratch;
+    private blockly: BlocklyType;
+    private get availableBlocks(): BlockPlain[] {
+        return this.extension.getInfo().blocks?.filter(this.isAvailableBlock) ?? [];
+    }
+    public constructor(extension: ExtensionPlain) {
+        if (!extension)
+            throw new InjectionError("no extension given.");
+        if (!extension.runtime)
+            throw new InjectionError(`no runtime found in ${extension.getInfo().id}.`);
+        this.runtime = extension.runtime;
+        this.extension = extension;
+        const blockly = Extensions.getBlockly(this.runtime);
+        if (!blockly)
+            throw new InjectionError("failed to get blockly instance.");
+        this.blockly = blockly;
+    }
+    public isAvailableBlock(blockInfo: BlockPlain): boolean {
+        return !!blockInfo.opcode;
+    }
+    public onGetInfo(originInfo: ExtensionInfo) {
+        return originInfo;
+    }
+    public inject(block: BlocklyBlock, myInfo: BlockPlain): void {
+        Object.assign({}, block, { opcode: myInfo.opcode });
+    }
+    public init(block: BlocklyBlock, myInfo: BlockPlain): void {
+        block.appendDummyInput("endText").appendField(`(Block injected: ${myInfo.opcode})`);
+    }
+    private findAvaliable(opcodeWithExtensionID: string): BlockPlain | null {
+        return this.availableBlocks.find(
+            block =>
+                opcodeWithExtensionID === `${this.extension.getInfo().id}_${block.opcode}`
+        ) ?? null;
+    }
+    private isDefinitionAvailable(opcodeWithExtensionID: string): boolean {
+        return this.availableBlocks.length > 0 && this.availableBlocks.some(block => opcodeWithExtensionID === `${this.extension.getInfo().id}_${block.opcode}`);
+    }
+    public start() {
+        if (!this.blockly) return;
+        // const injector: BlocklyInjector = this;
+        const originGetInfo = this.extension.getInfo.bind(this.extension);
+        this.extension.getInfo = () => {
+            const originInfo = originGetInfo();
+            return this.onGetInfo(originInfo) ?? originInfo;
+        };
+        this.blockly.Blocks = new Proxy(this.blockly.Blocks, {
+            set: (target, opcode: string, definition: BlocklyBlock) => {
+                const injected = definition;
+                if (this.isDefinitionAvailable(opcode)) {
+                    const originInit = injected.init;
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias
+                    const injector = this;
+                    injected.init = function (this: BlocklyBlock) {
+                        originInit?.call(this);
+                        injector.init(this, injector.findAvaliable(opcode) as BlockPlain);
+                        injector.inject(this, injector.findAvaliable(opcode) as BlockPlain);
+                    };
+                };
+                return Reflect.set(target, opcode, injected);
+            }
+        });
+    }
 }
 export namespace BlockType {
     export function hidden(target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
-        const parent = Unnecessary.getConstructor<typeof Extension>(target);
+        const parent = OriginalState.getConstructor<typeof Extension>(target);
         const myself = parent.blockDecorated[parent.blockDecorated.length - 1];
         if (myself) {
             if (descriptor.value === myself.method) {
@@ -312,7 +382,7 @@ export namespace BlockType {
                 type,
                 method: descriptor.value
             });
-            const parent = Unnecessary.getConstructor<typeof Extension>(target);
+            const parent = OriginalState.getConstructor<typeof Extension>(target);
             if (Array.isArray(text)) {
                 block.overloads = text.map(e => TextParser.parsePart(e));
             } else block.parts = TextParser.parsePart(text);

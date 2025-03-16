@@ -1,6 +1,6 @@
 import type { Input } from "blockly";
 import type Blockly from "blockly";
-import type { Block, DataStorer, Extension, Menu, Version } from "./structs";
+import type { Block, BlocklyInjector, DataStorer, Extension, Menu, Version } from "./structs";
 export class ArgumentPart {
     content: string;
     type: ArgumentPartType;
@@ -148,13 +148,18 @@ export type FilterKey<T, K> = {
 export type FilterOut<T, U> = T extends U ? never : T;
 export type AcceptedArgType = InputTypeCast[FilterOut<InputType, "">];
 export interface LoaderConfig {
-    target: Promise<{ default: typeof Extension }>;
+    target: typeof Extension | SubOfAbstractClassConstructor<typeof BlocklyInjector>;
     errorCatches: (new () => Error)[];
     platform: PlatformSupported[];
     mode: "debug" | "release";
 }
+export type SubOfAbstractClassConstructor<
+    T extends abstract new (...args: any[]) => any
+> =
+    T extends abstract new (...args: infer R) => any ? new (...args: R) => InstanceType<T> : never;
 export type KeyValueString<T extends string = "="> = `${string}${T}${string}`;
 export type CopyAsGenericsOfArray<E> = E | E[];
+export type CopyAsGenericsOfPromise<E> = E | Promise<E>;
 export type MenuDefine = CopyAsGenericsOfArray<string | KeyValueString | MenuItem | StringArray>;
 export type StringArray = KeyValueString<",">;
 export type AnyArg = Record<string, any>;
@@ -181,7 +186,7 @@ export interface BlockPlain {
     hideFromPalette?: boolean;
 }
 export type ExtensionPlain = {
-    getInfo: () => ExtensionInfo;
+    getInfo: (this: ExtensionPlain) => ExtensionInfo;
     runtime?: Scratch;
 } & {
     [key: string]: any;

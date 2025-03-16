@@ -1,6 +1,6 @@
 import { ElementContext, Scratch } from "@framework/internal";
 import { Block, Extension, Menu, Translator } from "@framework/structs";
-import { GlobalContext, Unnecessary } from "@framework/tools";
+import { DOM, GlobalContext } from "@framework/tools";
 import "./style.css";
 const translator = Translator.create("zh-cn", {
     name: "沉沦之锚",
@@ -61,7 +61,7 @@ export default class FallingAnchors extends Extension {
                 anchor: parseVector(arg.$anchor),
                 bed: parseVector(arg.$bed),
                 size: arg.$size === "auto" ? "auto" : parseVector(arg.$size),
-                element: Unnecessary.elementTree(arg.$tag).class("fsa"),
+                element: DOM.elementTree(arg.$tag).class("fsa"),
                 tag: arg.$tag,
                 isInStage: false,
                 childs: [],
@@ -186,5 +186,5 @@ interface Componet {
 };
 const dataStore = GlobalContext.createDataStore(FallingAnchors, {
     componets: [] as Componet[],
-    rootBase: Unnecessary.elementTree("div").class("fsa", "base")
+    rootBase: DOM.elementTree("div").class("fsa", "base")
 });

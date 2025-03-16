@@ -1,5 +1,5 @@
 import { Extension, BlockType } from "@framework/structs";
-import { Unnecessary } from "@framework/tools";
+import { Binary, DOM } from "@framework/tools";
 import JSZip from "jszip";
 const files = [
     "audio.worklet.js",
@@ -37,7 +37,7 @@ export default class RunGodotGame extends Extension {
     allowSandboxed = false;
     @BlockType.Command("加载GDG数据[data]并运行到舞台")
     async loadGDG(arg: { data: string }) {
-        const blob = Unnecessary.base64ToBlob(arg.data, "application/zip");
+        const blob = Binary.base64ToBlob(arg.data, "application/zip");
         const zip = await JSZip.loadAsync(blob);
         const data: Record<string, string> = {};
         let config: Partial<Record<typeof files[number], string | undefined>> & {
@@ -64,17 +64,17 @@ export default class RunGodotGame extends Extension {
             const injectorScript = document.createElement("script");
             injectorScript.innerHTML = injectCodeDataGiven;
             entryHtml += injectorScript.outerHTML;
-            const iframe = Unnecessary.elementTree("iframe")
+            const iframe = DOM.elementTree("iframe")
                 .class("full")
-                .attribute("src", Unnecessary.createObjectURL(
+                .attribute("src", Binary.createObjectURL(
                     entryHtml, { type: "application/html" }
                 ));
-            Unnecessary.createStageOverlay(this).appendChild(iframe.result);
+            DOM.createStageOverlay(this).appendChild(iframe.result);
         };
     }
     @BlockType.Reporter("上传GDG文件并复制base64")
     async uploadFileAndCopyB64() {
-        const result = (await Unnecessary.readFile(await Unnecessary.uploadFile("*.gdg"), "dataurl")).split(",")[1];
+        const result = (await Binary.readFile(await Binary.uploadFile("*.gdg"), "dataurl")).split(",")[1];
         navigator.clipboard.writeText(result);
         return result;
     }

@@ -2,6 +2,7 @@ import { getDynamicArgs, initExpandableBlocks } from "./dynamicArg";
 import { ExtensionLoadError, GeneratedFailed, MissingError, UncognizedError } from "./exceptions";
 import {
     ArgumentPlain,
+    BlocklyType,
     BlockPlain,
     DynamicArgConfigPlain,
     ExtensionPlain,
@@ -16,6 +17,7 @@ import { AcceptedInputType } from "./internal";
 import { initOverloadedBlocks } from "./overloadedBlock";
 import type { Extension } from "./structs";
 import "./styles/common.css";
+import { OriginalState } from "./tools";
 if (!window._FSContext) {
     window._FSContext = {
         EXTENSIONS: {},
@@ -25,7 +27,7 @@ if (!window._FSContext) {
 export namespace Extensions {
     async function generateConstructor(extension: typeof Extension): Promise<new (runtime?: Scratch) => ExtensionPlain> {
         const { Version, Menu } = await import("./structs");
-        const { Unnecessary } = await import("./tools");
+        const { Cast } = await import("./tools");
         const ext = extension.onlyInstance;
         const context = getFSContext();
         function ExtensionConstructor(this: ExtensionPlain, runtime?: Scratch): ExtensionPlain {
@@ -42,7 +44,7 @@ export namespace Extensions {
             };
             const runtimeAssigned = Object.assign({},
                 window.ScratchWaterBoxed ?? window.Scratch ?? {},
-                runtime?.vm.runtime ?? {},
+                runtime?.vm?.runtime ?? {},
                 { runtime });
             ext.init(runtimeAssigned);
             ext.runtime = runtimeAssigned;
@@ -96,7 +98,7 @@ export namespace Extensions {
                         }
                     };
                     const currentArg: ArgumentPlain = {
-                        type: Unnecessary.castInputType(arg.inputType),
+                        type: Cast.castInputType(arg.inputType),
                     };
                     if (!AcceptedInputType.includes(arg.inputType)) {
                         if (Object.keys(ext.loadersWithDefault).includes(arg.inputType)) {
@@ -225,6 +227,13 @@ export namespace Extensions {
         if (window.ScratchWaterBoxed) return window.ScratchWaterBoxed;
         if (window.Scratch) return window.Scratch;
         return;
+    }
+    export function getBlockly(runtime: Scratch): BlocklyType | null {
+        return (
+            runtime.scratchBlocks ||
+            window.ScratchBlocks ||
+            OriginalState.hijack(OriginalState.getEventListener(runtime._events.EXTENSION_ADDED))?.ScratchBlocks
+        );
     }
     export function getFSContext(): GlobalResourceMachine {
         return window._FSContext as GlobalResourceMachine;
