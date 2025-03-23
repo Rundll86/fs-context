@@ -7,17 +7,16 @@ const currentScratch = Extensions.getScratch() as ScratchWaterBoxed;
 if (currentScratch) {
     const { target } = loaderConfig;
     if (target.prototype instanceof Extension) {
-        Extensions.load(target as typeof Extension).then(extensionLoaded => {
-            if (loaderConfig.mode === "debug") {
-                extensionLoaded.debugPrint();
-                console.warn("You're running on a Debug environment, don't publish it on production! It could divulge Scratch Runtime.");
-                console.warn("Check `mode` of @config/loader.ts to `release` to close this warning.");
-            };
-            extensionLoaded.to(...loaderConfig.platform);
-            if (Extensions.isInWaterBoxed()) {
-                currentScratch.loadTempExt();
-            };
-        });
+        const extensionLoaded = Extensions.load(target as typeof Extension);
+        if (loaderConfig.mode === "debug") {
+            extensionLoaded.debugPrint();
+            console.warn("You're running on a Debug environment, don't publish it on production! It could divulge Scratch Runtime.");
+            console.warn("Check `mode` of @config/loader.ts to `release` to close this warning.");
+        };
+        extensionLoaded.to(...loaderConfig.platform);
+        if (Extensions.isInWaterBoxed()) {
+            currentScratch.loadTempExt();
+        };
     } else {
         try {
             injectBlocks = (extension) => {

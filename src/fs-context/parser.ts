@@ -107,7 +107,7 @@ export namespace TextParser {
         if (hasDefaultValue(arg)) {
             result = result.split("=", 1)[0];
         };
-        return result as InputType;
+        return result.trim() as InputType;
     }
     export function parseDefaultValue(arg: string): any | undefined {
         if (!hasDefaultValue(arg)) {
@@ -117,6 +117,6 @@ export namespace TextParser {
         return InputTypeCastConstructor[parseType(arg)]?.call(window, result) ?? result;
     }
     export function parseName(arg: string): string {
-        return arg.split(/[:=]/)[0];
+        return arg.split(/[:=]/)[0].trim();
     }
 }

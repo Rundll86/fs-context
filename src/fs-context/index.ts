@@ -88,7 +88,7 @@ export namespace Extensions {
                         };
                     };
                     if (arg.inputType === "menu") {
-                        currentArg.menu = arg.value as string;
+                        currentArg.menu = (arg.value || arg.content) as string;
                     } else {
                         currentArg.defaultValue = arg.value;
                     };
@@ -210,9 +210,9 @@ export namespace Extensions {
         if (window.Scratch) return window.Scratch;
         return;
     }
-    export async function load(extension: typeof Extension) {
+    export function load(extension: typeof Extension) {
         const constructorPlain = extension;
-        const constructorGenerated = await generateConstructor(extension);
+        const constructorGenerated = generateConstructor(extension);
         const objectPlain = extension.onlyInstance;
         const objectGenerated = new constructorGenerated(getScratch());
         const scratch = getScratch() as ScratchWaterBoxed;

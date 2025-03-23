@@ -27,8 +27,8 @@
                         <select v-if="arg.type === 'input' && arg.inputType === 'menu'" class="inputer select" :style="{
                             backgroundColor: colorInputer,
                             borderColor: colorMenu
-                        }" :value="findMenu(arg.value as string)?.items[0].value">
-                            <option v-for="option in findMenu(arg.value as string)?.items"
+                        }" :value="findMenu(arg.value || arg.content)?.items[0].value">
+                            <option v-for="option in findMenu(arg.value || arg.content)?.items"
                                 :value="option.value ? option.value : option.name" :key="option.name">{{ option.name }}
                             </option>
                         </select>
@@ -56,12 +56,12 @@ export default {
         };
     },
     methods: {
-        findMenu(id: string | Menu) {
+        findMenu(id: any) {
             return id instanceof Menu ? id : this.menus.find(m => m.name === id);
         },
         reloadExtension() {
             this.extensionLoaded = false;
-            import("../../entry").then((e) => {
+            import("@framework/entry").then((e) => {
                 let ext = e.extension;
                 if (!ext) { console.log("abc"); return; };
                 const colors = ext.calcColor();
@@ -72,10 +72,14 @@ export default {
                 this.menus = ext.menus;
                 this.extName = ext.displayName;
                 this.extId = ext.id;
-                document.querySelectorAll("input").forEach(i => this.autoWidthInput({ target: i }));
                 setTimeout(() => {
                     this.extensionLoaded = true;
                 }, 100);
+                this.$nextTick(() => {
+                    document.querySelectorAll("input").forEach(e => {
+                        this.autoWidthInput({ target: e });
+                    });
+                });
             });
         },
         copyExtensionUrl() {

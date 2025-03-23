@@ -1,10 +1,12 @@
 <template>
-    <div class="block" :style="{ backgroundColor: colorBlock, borderColor: colorInputer }">
-        <button class="oval" :style="{ backgroundColor: colorMenu }" @click="runMethod($el, opcode)">Run</button>
-        <button class="oval" :style="{ backgroundColor: colorMenu }"
-            @click="view(opcode, type, unparsedText)">View</button>
-        <button class="oval" :style="{ backgroundColor: colorMenu }" @click="alerter(calcArgs($el))">Arg</button>
-        <slot></slot>
+    <div class="block-container">
+        <div class="block" :style="{ backgroundColor: colorBlock, borderColor: colorInputer }">
+            <button class="oval" :style="{ backgroundColor: colorMenu }" @click="runMethod($el, opcode)">Run</button>
+            <button class="oval" :style="{ backgroundColor: colorMenu }"
+                @click="view(opcode, type, unparsedText)">View</button>
+            <button class="oval" :style="{ backgroundColor: colorMenu }" @click="alerter(calcArgs($el))">Arg</button>
+            <slot></slot>
+        </div>
     </div>
 </template>
 <script setup lang="ts">
@@ -78,13 +80,21 @@ export default {
 };
 </script>
 <style scoped>
+.block-container {
+    display: block;
+}
+
 .block {
     border: 3px solid transparent;
     padding: 3px 5px;
-    display: inline-flex;
+    display: flex;
     border-radius: 5px;
     align-items: center;
     margin: 5px 0;
+}
+
+.block * {
+    text-wrap: nowrap;
 }
 
 .oval {
