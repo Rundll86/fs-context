@@ -1,4 +1,3 @@
-import { Extensions } from ".";
 import type {
     ArgumentDefine,
     BlockTypePlain,
@@ -95,7 +94,7 @@ export class Extension {
                 throw new MissingError(`Block "${opcode}" is not found.`);
             };
         } else {
-            throw new MissingError("Extension is not generated and constructed.");
+            throw new MissingError("Extension is not generated or constructed.");
         };
     };
     init(runtime?: Scratch): any {
@@ -221,7 +220,7 @@ export class Menu {
 }
 export class Translator<L extends LanguageSupported, D extends LanguageStored> {
     private stored: TranslatorStoredData = {};
-    language: LanguageSupported = Extensions.getScratch()?.translate.language || 'zh-cn';
+    language: LanguageSupported = (window.Scratch ?? window.ScratchWaterBoxed)?.translate.language || 'zh-cn';
     defaultLanguage: L = 'zh-cn' as L;
     store<T extends LanguageSupported>(lang: T, data: D & LanguageStored) {
         this.stored[lang] = data;
@@ -311,7 +310,7 @@ export abstract class BlocklyInjector {
             throw new InjectionError(`no runtime found in ${extension.getInfo().id}.`);
         this.runtime = extension.runtime;
         this.extension = extension;
-        const blockly = Extensions.getBlockly(this.runtime);
+        const blockly = OriginalState.getBlockly(this.runtime);
         if (!blockly)
             throw new InjectionError("failed to get blockly instance.");
         this.blockly = blockly;

@@ -1,38 +1,12 @@
 import {
     AllFunction,
+    BlocklyType,
     ElementContext,
-    GlobalResourceMachine,
     HexColorString,
     InputType,
-    WritableKeys
 } from "./internal";
-import { DataStorer, Extension } from "./structs";
-import { ExtensionLoadError, MissingError, OverwriteWarn, SyntaxError } from "./exceptions";
-export namespace GlobalContext {
-    const context: GlobalResourceMachine = window._FSContext as GlobalResourceMachine;
-    export function createDataStore<T>(target: typeof Extension | string, datas: T): DataStorer<T> {
-        const { id } = typeof target === "string" ? { id: target } : target.onlyInstance;
-        if (Object.hasOwn(context.EXPORTED, id)) {
-            throw new OverwriteWarn(`Data store named "${id}" is already exists.`);
-        };
-        context.EXPORTED[id] = new DataStorer<T>(datas);
-        return context.EXPORTED[id];
-    };
-    export function destoryDataStore(id: string) {
-        if (Object.hasOwn(context.EXPORTED, id)) {
-            delete context.EXPORTED[id];
-        } else {
-            throw new MissingError(`Data store "${id}" does not exist.`);
-        };
-    };
-    export function getDataStore<T extends { [key: string]: any } = any>(id: string): DataStorer<T> {
-        if (Object.hasOwn(context.EXPORTED, id)) {
-            return context.EXPORTED[id] as DataStorer<T>;
-        } else {
-            throw new MissingError(`Data store "${id}" does not exist.`);
-        };
-    };
-}
+import { Extension } from "./structs";
+import { ExtensionLoadError, MissingError, SyntaxError } from "./exceptions";
 export namespace Random {
     export function integer(min: number, max: number) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -182,6 +156,13 @@ export namespace OriginalState {
         const result = fn();
         Function.prototype.apply = _orig;
         return result;
+    }
+    export function getBlockly(runtime: Scratch): BlocklyType | null {
+        return (
+            runtime.scratchBlocks ||
+            window.ScratchBlocks ||
+            hijack(getEventListener(runtime._events.EXTENSION_ADDED))?.ScratchBlocks
+        );
     }
     export function getEventListener(e: AllFunction[]) {
         return e instanceof Array ? e[e.length - 1] : e;

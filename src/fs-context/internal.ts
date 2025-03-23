@@ -1,6 +1,6 @@
 import type { Input } from "blockly";
 import type Blockly from "blockly";
-import type { Block, BlocklyInjector, DataStorer, Extension, Menu, Version } from "./structs";
+import type { Block, BlocklyInjector, Extension, Menu } from "./structs";
 export class ArgumentPart {
     content: string;
     type: ArgumentPartType;
@@ -95,10 +95,6 @@ export const InputTypeCastConstructor: Record<string, any> = {
     color: String,
     "hat-paramater": String,
 };
-export interface GlobalResourceMachine {
-    EXTENSIONS: Record<string, Version>;
-    EXPORTED: { [key: string]: DataStorer }
-}
 export interface ScratchTranslateFunction {
     language: LanguageSupported;
     setup: (data: Record<string, LanguageStored>) => void;

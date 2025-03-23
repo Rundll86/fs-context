@@ -1,7 +1,6 @@
 type Scratch = import("./internal").Scratch;
 type ScratchWaterBoxed = import("./internal").ScratchWaterBoxed;
 type ExtensionPlain = import("./internal").ExtensionPlain;
-type GlobalResourceMachine = import("./internal").GlobalResourceMachine;
 type BlockPlain = import("./internal").BlockPlain;
 declare module "*.vue" {
     const content: import("vue").Component;
@@ -40,7 +39,5 @@ declare interface Window {
             collaboratorList: import("./structs").Collaborator[]
         }
     };
-    _FSContext?: GlobalResourceMachine;
-    callErrorOverlay?: (error: Error) => void;
     ScratchBlocks?: BlockPlain[];
 }

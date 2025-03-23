@@ -1,12 +1,11 @@
 import { getDynamicArgs, initExpandableBlocks } from "./dynamicArg";
+import { initOverloadedBlocks } from "./overloadedBlock";
 import { ExtensionLoadError, GeneratedFailed, MissingError, UncognizedError } from "./exceptions";
-import {
+import type {
     ArgumentPlain,
-    BlocklyType,
     BlockPlain,
     DynamicArgConfigPlain,
     ExtensionPlain,
-    GlobalResourceMachine,
     HexColorString,
     MenuPlain,
     PlatformSupported,
@@ -14,33 +13,16 @@ import {
     ScratchWaterBoxed
 } from "./internal";
 import { AcceptedInputType } from "./internal";
-import { initOverloadedBlocks } from "./overloadedBlock";
 import type { Extension } from "./structs";
+import { Menu } from "./structs";
 import "./styles/common.css";
-import { OriginalState } from "./tools";
-if (!window._FSContext) {
-    window._FSContext = {
-        EXTENSIONS: {},
-        EXPORTED: {}
-    };
-};
+import { Cast } from "./tools";
 export namespace Extensions {
-    async function generateConstructor(extension: typeof Extension): Promise<new (runtime?: Scratch) => ExtensionPlain> {
-        const { Version, Menu } = await import("./structs");
-        const { Cast } = await import("./tools");
+    function generateConstructor(extension: typeof Extension): new (runtime?: Scratch) => ExtensionPlain {
         const ext = extension.onlyInstance;
-        const context = getFSContext();
         function ExtensionConstructor(this: ExtensionPlain, runtime?: Scratch): ExtensionPlain {
             if (!runtime?.extensions?.unsandboxed && !ext.allowSandboxed) {
                 throw new ExtensionLoadError(`FSExtension "${ext.id}" must be supported unsandboxed.`);
-            };
-            for (const i in ext.requires) {
-                if (!Object.keys(context.EXTENSIONS).includes(i)) {
-                    throw new ExtensionLoadError(`FSExtension "${ext.id}" requires ${i} to be loaded.`);
-                }
-                if (Version.compare(context.EXTENSIONS[i], ext.requires[i]) === ext.requires[i]) {
-                    throw new ExtensionLoadError(`FSExtension "${ext.id}" requires ${i} to be at least ${ext.requires[i]}.`);
-                };
             };
             const runtimeAssigned = Object.assign({},
                 window.ScratchWaterBoxed ?? window.Scratch ?? {},
@@ -220,23 +202,13 @@ export namespace Extensions {
         };
         return ExtensionConstructor as any;
     }
-    export function isInWaterBoxed() {
-        return window.ScratchWaterBoxed !== undefined;
+    export function isInWaterBoxed(data?: typeof window.ScratchWaterBoxed): data is ScratchWaterBoxed {
+        return !!window.ScratchWaterBoxed;
     }
     export function getScratch(): Scratch | ScratchWaterBoxed | undefined {
         if (window.ScratchWaterBoxed) return window.ScratchWaterBoxed;
         if (window.Scratch) return window.Scratch;
         return;
-    }
-    export function getBlockly(runtime: Scratch): BlocklyType | null {
-        return (
-            runtime.scratchBlocks ||
-            window.ScratchBlocks ||
-            OriginalState.hijack(OriginalState.getEventListener(runtime._events.EXTENSION_ADDED))?.ScratchBlocks
-        );
-    }
-    export function getFSContext(): GlobalResourceMachine {
-        return window._FSContext as GlobalResourceMachine;
     }
     export async function load(extension: typeof Extension) {
         const constructorPlain = extension;
@@ -275,7 +247,6 @@ export namespace Extensions {
                         scratch.currentExtension = objectGenerated;
                         scratch.currentExtensionPlain = objectPlain;
                     };
-                    getFSContext().EXTENSIONS[objectPlain.id] = objectPlain.version;
                 }
                 return this;
             },

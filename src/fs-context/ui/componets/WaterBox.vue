@@ -61,10 +61,9 @@ export default {
         },
         reloadExtension() {
             this.extensionLoaded = false;
-            import("../../entry").then(async (e) => {
-                await e.result;
-                let ext = window.ScratchWaterBoxed?.currentExtensionPlain;
-                if (!ext) { return; };
+            import("../../entry").then((e) => {
+                let ext = e.extension;
+                if (!ext) { console.log("abc"); return; };
                 const colors = ext.calcColor();
                 this.colorBlock = colors.block;
                 this.colorInputer = colors.inputer;
