@@ -1,13 +1,14 @@
 import { Extensions } from ".";
-import type { ScratchWaterBoxed, SubOfAbstractClassConstructor } from "@framework/internal";
+import type { ScratchWaterBoxed } from "@framework/internal";
 import loaderConfig from "@config/loader";
-import { BlocklyInjector, Extension } from "./structs";
+import { Extension } from "./structs";
+import { OriginalState } from "./tools";
 declare let injectBlocks: (extension: ExtensionPlain) => void;
 const currentScratch = Extensions.getScratch() as ScratchWaterBoxed;
 if (currentScratch) {
     const { target } = loaderConfig;
-    if (target.prototype instanceof Extension) {
-        const extensionLoaded = Extensions.load(target as typeof Extension);
+    if (OriginalState.isConstructorExtends(target, Extension)) {
+        const extensionLoaded = Extensions.load(target);
         if (loaderConfig.mode === "debug") {
             extensionLoaded.debugPrint();
             console.warn("You're running on a Debug environment, don't publish it on production! It could divulge Scratch Runtime.");
@@ -20,8 +21,7 @@ if (currentScratch) {
     } else {
         try {
             injectBlocks = (extension) => {
-                const Injector = target as SubOfAbstractClassConstructor<typeof BlocklyInjector>;
-                const injector = new Injector(extension);
+                const injector = new target(extension);
                 injector.start();
             };
             injectBlocks.bind(null);

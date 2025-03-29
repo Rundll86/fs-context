@@ -112,6 +112,10 @@ export class Block<O extends Extension = Extension> {
     overloads: ArgumentPart[][] = [];
     type: BlockTypePlain = "command";
     hidden: boolean = false;
+    monitor: boolean = false;
+    platform: BlockMode.TargetType[] = ["sprite", "stage"];
+    restartable: boolean = false;
+    edge: boolean = false;
     private _opcode: string = "";
     get opcode(): string {
         return this._opcode || md5(this.text || this.overloadedText[0]);
@@ -368,18 +372,46 @@ export abstract class BlocklyInjector {
         });
     }
 }
-export namespace BlockType {
-    export function hidden(target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
+export namespace BlockMode {
+    function matchBlock(target: Extension, key: string, descriptor: PropertyDescriptor) {
         const parent = OriginalState.getConstructor<typeof Extension>(target);
         const myself = parent.blockDecorated[parent.blockDecorated.length - 1];
         if (myself) {
-            if (descriptor.value === myself.method) {
-                myself.hidden = true;
+            if (key === myself.opcode) {
+                return myself;
             } else {
-                throw new GeneratedFailed(`Cannot hide ${propertyKey}, unmatched block implement.`);
+                throw new GeneratedFailed(`Cannot match ${key} in ${target.id}, unmatched opcode.`);
             };
-        } else throw new GeneratedFailed(`Cannot hide ${propertyKey}, block instance isn't found.`);;
+        } else
+            throw new GeneratedFailed(`Cannot match ${key} in ${target.id}, block instance isn't found.`);
     }
+    export type TargetType = "sprite" | "stage";
+    export function Hidden(target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
+        const myself = matchBlock(target, propertyKey, descriptor);
+        myself.hidden = true;
+    }
+    export function UseMonitor(target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
+        const myself = matchBlock(target, propertyKey, descriptor);
+        if (["reporter", "bool"].includes(myself.type))
+            throw new GeneratedFailed(`Monitor can only be used in reporter block.`);
+        myself.monitor = true;
+    }
+    export function Filt(...platform: TargetType[]) {
+        return function (target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
+            const myself = matchBlock(target, propertyKey, descriptor);
+            myself.platform = platform;
+        };
+    }
+    export function ThreadRestartable(target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
+        const myself = matchBlock(target, propertyKey, descriptor);
+        myself.restartable = true;
+    }
+    export function ActiveEdge(target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
+        const myself = matchBlock(target, propertyKey, descriptor);
+        myself.edge = true;
+    }
+}
+export namespace BlockType {
     export function Plain(type: BlockTypePlain, text: string | string[]) {
         return function (target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
             const block = new Block({

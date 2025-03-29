@@ -1,5 +1,5 @@
 import { InputLoader } from "@framework/internal";
-import { BlockType, Extension } from "@framework/structs";
+import { BlockMode, BlockType, Extension } from "@framework/structs";
 import { Random } from "@framework/tools";
 export default class MyExtension extends Extension {
     id = "myextension";
@@ -11,6 +11,14 @@ export default class MyExtension extends Extension {
             },
         }
     };
+    @BlockType.Boolean("随机返回[data:textarray]中的一个")
+    randomReturn({ data }: { data: string[] }) {
+        return data[Random.integer(0, data.length - 1)];
+    }
+    @BlockMode.Filt("sprite")
+    @BlockMode.UseMonitor
+    @BlockMode.ThreadRestartable
+    @BlockMode.ActiveEdge
     @BlockType.Reporter([
         "计算[num1:number=114]+[num2:number=514]",
         "计算[num1:number=114]-[num2:number=514]",
@@ -25,11 +33,7 @@ export default class MyExtension extends Extension {
         ];
         return overloadMap[overloadIndex](num1, num2);
     }
-    @BlockType.Boolean("随机返回[data:textarray]中的一个")
-    randomReturn({ data }: { data: string[] }) {
-        return data[Random.integer(0, data.length - 1)];
-    }
-    @BlockType.hidden
+    @BlockMode.Hidden
     @BlockType.Command("这个积木已隐藏")
     hiddenBlock() { }
 };

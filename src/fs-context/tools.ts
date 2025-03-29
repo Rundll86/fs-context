@@ -167,6 +167,12 @@ export namespace OriginalState {
     export function getEventListener(e: AllFunction[]) {
         return e instanceof Array ? e[e.length - 1] : e;
     }
+    export function isConstructorExtends<T extends new (...args: any[]) => any>(
+        child: new (...args: any[]) => any,
+        parent: T
+    ): child is T {
+        return child.prototype instanceof parent;
+    }
 }
 export namespace Binary {
     export async function uploadFile(accept: string = "*") {

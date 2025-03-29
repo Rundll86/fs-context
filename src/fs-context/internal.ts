@@ -1,6 +1,6 @@
 import type { Input } from "blockly";
 import type Blockly from "blockly";
-import type { Block, BlocklyInjector, Extension, Menu } from "./structs";
+import type { Block, BlocklyInjector, BlockMode, Extension, Menu } from "./structs";
 export class ArgumentPart {
     content: string;
     type: ArgumentPartType;
@@ -180,6 +180,10 @@ export interface BlockPlain {
     dynamicArgsInfo?: DynamicArgConfigPlain;
     overloads?: string[];
     hideFromPalette?: boolean;
+    disableMonitor: boolean;
+    shouldRestartExistingThreads: boolean;
+    filter: BlockMode.TargetType[];
+    isEdgeActivated: boolean;
 }
 export type ExtensionPlain = {
     getInfo: (this: ExtensionPlain) => ExtensionInfo;

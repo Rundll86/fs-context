@@ -50,7 +50,11 @@ export namespace Extensions {
                     blockType: block.type,
                     text: block.text,
                     arguments: args,
-                    hideFromPalette: block.hidden
+                    hideFromPalette: block.hidden,
+                    disableMonitor: !block.monitor,
+                    shouldRestartExistingThreads: block.restartable,
+                    filter: block.platform,
+                    isEdgeActivated: block.edge
                 };
                 if (block.overloads.length > 0) {
                     currentBlock.overloads = block.overloadedText;
