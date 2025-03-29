@@ -55,6 +55,8 @@
     "webpackbar": "^7.0.0"
   },
   "dependencies": {
+    "@types/crypto-js": "^4.2.2",
+    "crypto-js": "^4.2.0",
     "highlight.js": "^11.10.0",
     "md5": "^2.3.0",
     "seedrandom": "^3.0.5",
