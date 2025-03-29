@@ -392,7 +392,7 @@ export namespace BlockMode {
     }
     export function UseMonitor(target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
         const myself = matchBlock(target, propertyKey, descriptor);
-        if (["reporter", "bool"].includes(myself.type))
+        if (!["reporter", "bool"].includes(myself.type))
             throw new GeneratedFailed(`Monitor can only be used in reporter block.`);
         myself.monitor = true;
     }
@@ -404,10 +404,14 @@ export namespace BlockMode {
     }
     export function ThreadRestartable(target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
         const myself = matchBlock(target, propertyKey, descriptor);
+        if (!["hat", "event"].includes(myself.type))
+            throw new GeneratedFailed(`ThreadRestartable can only be used in hat or event block.`);
         myself.restartable = true;
     }
     export function ActiveEdge(target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
         const myself = matchBlock(target, propertyKey, descriptor);
+        if (!["hat"].includes(myself.type))
+            throw new GeneratedFailed(`ActiveEdge can only be used in hat block.`);
         myself.edge = true;
     }
 }
