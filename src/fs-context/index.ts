@@ -200,8 +200,10 @@ export namespace Extensions {
                 };
             });
             ext.generated = result;
-            // if (!isInWaterBoxed()) initExpandableBlocks(result);
-            // if (!isInWaterBoxed()) initOverloadedBlocks(result);
+            if (!ext.disableBlockInjection) {
+                if (!isInWaterBoxed()) initExpandableBlocks(result);
+                if (!isInWaterBoxed()) initOverloadedBlocks(result);
+            };
             return result;
         };
         return ExtensionConstructor as any;

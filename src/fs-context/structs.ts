@@ -38,6 +38,7 @@ export class Extension {
     colors: ColorDefine = {
         theme: "#FF0000"
     };
+    disableBlockInjection: boolean = false;
     runtime?: Scratch;
     canvas?: HTMLCanvasElement;
     loaders: Record<string, InputLoader> = {};

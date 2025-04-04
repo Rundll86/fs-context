@@ -176,6 +176,12 @@ export namespace OriginalState {
     ): child is T {
         return child.prototype instanceof parent;
     }
+    export function someIncludes(parent: string, sub: string): boolean {
+        return parent.split("").some(char => sub.includes(char));
+    }
+    export function everyIncludes(parent: string, sub: string): boolean {
+        return parent.split("").every(char => sub.includes(char));
+    }
 }
 export namespace Binary {
     export async function uploadFile(accept: string = "*") {
