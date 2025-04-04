@@ -70,7 +70,10 @@ export namespace DOM {
             }
         };
     }
-    export function createStageOverlay<T extends keyof HTMLElementTagNameMap>(extension: Extension, tag: T = "div" as T): HTMLElement {
+    export function createStageOverlay<T extends keyof HTMLElementTagNameMap>(
+        extension: Extension,
+        tag: T = "div" as T
+    ): HTMLElementTagNameMap[T] {
         if (extension.allowSandboxed) {
             throw new ExtensionLoadError("Cannot create stage overlay with a sandboxed extension.");
         };

@@ -28,11 +28,11 @@ export namespace Extensions {
                 window.ScratchWaterBoxed ?? window.Scratch ?? {},
                 runtime?.vm?.runtime ?? {},
                 { runtime });
-            ext.init(runtimeAssigned);
             ext.runtime = runtimeAssigned;
             if (!ext.allowSandboxed) {
                 ext.canvas = runtime?.renderer.canvas;
             };
+            ext.init(runtimeAssigned);
             ext.blocks.forEach(block => {
                 block.parts.forEach(arg => {
                     if (arg.inputType === "menu" && arg.value instanceof Menu) {
@@ -200,8 +200,8 @@ export namespace Extensions {
                 };
             });
             ext.generated = result;
-            if (!isInWaterBoxed()) initExpandableBlocks(result);
-            if (!isInWaterBoxed()) initOverloadedBlocks(result);
+            // if (!isInWaterBoxed()) initExpandableBlocks(result);
+            // if (!isInWaterBoxed()) initOverloadedBlocks(result);
             return result;
         };
         return ExtensionConstructor as any;
