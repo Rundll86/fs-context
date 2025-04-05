@@ -1,6 +1,6 @@
 import { ElementContext, Scratch } from "@framework/internal";
 import { Block, Collaborator, Extension, Translator, Version } from "@framework/structs";
-import { DOM, GlobalContext } from "@framework/tools";
+import { DOM } from "@framework/tools";
 import "./style.css";
 const translator = Translator.create("zh-cn", {
     name: "内嵌网页",
@@ -164,7 +164,3 @@ function parsePos(text: string): Position {
         y: Number(arr[1])
     };
 }
-const dataStore = GlobalContext.createDataStore(FSIFrame, {
-    iframes: [] as ElementContext<HTMLIFrameElement>[],
-    rootBase: DOM.elementTree("div").class("fsi-base")
-});

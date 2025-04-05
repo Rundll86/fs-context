@@ -61,10 +61,18 @@ export namespace Extensions {
                 };
                 for (const argIndex in block.plainArguments) {
                     const arg = block.plainArguments[argIndex];
+                    const argIndexNumber = Number(argIndex);
+                    const partIndexNumber = block.parts.findIndex(e=>e===arg);
+                    const lastArg = block.plainArguments[argIndexNumber - 1];
+                    const nextArg = block.plainArguments[argIndexNumber + 1];
+                    const lastPart = block.parts[partIndexNumber - 1];
+                    const nextPart = block.parts[partIndexNumber + 1];
                     const amIRest = !!arg.dyConfig;
                     const myRestConfig: DynamicArgConfigPlain = {
-                        afterArg: argIndex === "0" ? undefined : block.plainArguments[Number(argIndex) - 1].content,
+                        afterArg: argIndex === "0" ? undefined : lastArg.content,
                         dynamicArgTypes: [],
+                        preText: lastPart?.content ?? "",
+                        endText: nextPart?.content ?? "",
                         ...arg.dyConfig ?? {}
                     };
                     if (arg.dyConfig) {

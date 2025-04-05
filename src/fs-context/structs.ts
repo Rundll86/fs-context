@@ -17,7 +17,8 @@ import type {
     CopyAsGenericsOfArray,
     BlocklyType,
     ExtensionInfo,
-    BlockPlain
+    BlockPlain,
+    DynamicArgConfigDefine
 } from "./internal";
 import { ArgumentPart } from "./internal";
 import { Color, MenuParser, OriginalState, TextParser } from "./tools";
@@ -414,6 +415,17 @@ export namespace BlockMode {
         if (!["hat"].includes(myself.type))
             throw new GeneratedFailed(`ActiveEdge can only be used in hat block.`);
         myself.edge = true;
+    }
+    export function ToDynamic(argName: string, config?: DynamicArgConfigDefine) {
+        return function (target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
+            const myself = matchBlock(target, propertyKey, descriptor);
+            const arg = myself.plainArguments.find(i => i.content === argName);
+            if (arg) {
+                arg.dyConfig = config ?? {};
+            } else {
+                throw new GeneratedFailed(`Dynamic argument "${argName}" is not found in block "${myself.opcode}".`);
+            };
+        };
     }
 }
 export namespace BlockType {
