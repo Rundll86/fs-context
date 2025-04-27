@@ -1,7 +1,6 @@
 import { json, textArray } from "@framework/built-ins/loaders";
 import { InputLoader } from "@framework/internal";
-import { BlockType, Extension } from "@framework/structs";
-import { GlobalContext } from "@framework/tools";
+import { BlockType, DataStorer, Extension } from "@framework/structs";
 interface PrototypeDefine {
     name: string;
     ownAttrs: string[];
@@ -14,7 +13,7 @@ interface ObjectCreated {
     attrs: Record<string, string>;
     get validAttrs(): Record<string, string>;
 }
-const data = GlobalContext.createDataStore("oop_gandi_vm", {
+const data = new DataStorer({
     protos: [] as PrototypeDefine[],
     objects: [] as ObjectCreated[]
 });

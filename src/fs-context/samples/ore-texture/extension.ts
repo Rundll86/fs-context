@@ -11,7 +11,6 @@ export default class OreTexture extends Extension {
             }
         }
     };
-    @BlockType.hidden
     @BlockType.Reporter("赤铜矿[seed:rng=114514]")
     Redcopper({ seed }: { seed: PRNG }) {
         return(seed);

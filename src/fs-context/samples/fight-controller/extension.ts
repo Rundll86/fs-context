@@ -1,5 +1,4 @@
-import { BlockType, Extension } from "@framework/structs";
-import { GlobalContext } from "@framework/tools";
+import { BlockType, DataStorer, Extension } from "@framework/structs";
 enum State {
     WALK, STAND, ATTACK
 }
@@ -45,7 +44,7 @@ class StateMachine {
         };
     }
 }
-const data = GlobalContext.createDataStore("fighter", {
+const data = new DataStorer({
     machines: [] as StateMachine[]
 });
 export default class FightController extends Extension {

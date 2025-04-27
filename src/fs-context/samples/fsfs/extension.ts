@@ -38,11 +38,4 @@ export default class FSFS extends Extension {
         driver = Number.isNaN(driver) ? 0 : driver;
         return complete === "0" ? [driver, ...parts] : parts;
     }
-    @BlockType.Reporter("创建[path:string=0:samples>hello world.txt]作为[type:menu]，路径[mkdir:menu]")
-    createFile({ path, type,mkdir }: { path: string, type: "file" | "folder",mkdir:"0"|"1" }): boolean {
-        const parts = this.parsePath({ path, complete: "1" });
-        const driver = Number(parts.shift());
-        const node = data.drivers[driver];
-        if (!node) return false;
-    }
 };

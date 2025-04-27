@@ -1,5 +1,4 @@
-import { BlockType, Extension, Translator } from "@framework/structs";
-import { GlobalContext } from "@framework/tools";
+import { BlockType, DataStorer, Extension, Translator } from "@framework/structs";
 const translator = Translator.create("zh-cn", {
     name: "Run JS",
     description: "运行JS代码",
@@ -34,6 +33,6 @@ export default class FallingAnchors extends Extension {
         return dataStore.read("stack");
     }
 };
-const dataStore = GlobalContext.createDataStore(FallingAnchors, {
+const dataStore = new DataStorer({
     stack: ""
 });

@@ -1,6 +1,6 @@
 import { ElementContext, Scratch } from "@framework/internal";
-import { Block, Extension, Menu, Translator } from "@framework/structs";
-import { DOM, GlobalContext } from "@framework/tools";
+import { Block, DataStorer, Extension, Menu, Translator } from "@framework/structs";
+import { DOM } from "@framework/tools";
 import "./style.css";
 const translator = Translator.create("zh-cn", {
     name: "沉沦之锚",
@@ -184,7 +184,7 @@ interface Componet {
     updateStyle: () => void;
     currentRenderingTree: HTMLElement | null;
 };
-const dataStore = GlobalContext.createDataStore(FallingAnchors, {
+const dataStore = new DataStorer({
     componets: [] as Componet[],
     rootBase: DOM.elementTree("div").class("fsa", "base")
 });
