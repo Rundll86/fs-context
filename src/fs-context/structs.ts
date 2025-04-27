@@ -120,7 +120,7 @@ export class Block<O extends Extension = Extension> {
     edge: boolean = false;
     private _opcode: string = "";
     get opcode(): string {
-        return this._opcode || md5(this.text || this.overloadedText[0]);
+        return this._opcode || `_${md5(this.text || this.overloadedText[0] || Date.now().toString())}`;
     }
     get text(): string {
         let result: string = "";
@@ -377,15 +377,14 @@ export abstract class BlocklyInjector {
 export namespace BlockMode {
     function matchBlock(target: Extension, key: string, descriptor: PropertyDescriptor) {
         const parent = OriginalState.getConstructor<typeof Extension>(target);
-        const myself = parent.blockDecorated[parent.blockDecorated.length - 1];
-        if (myself) {
-            if (key === myself.opcode) {
-                return myself;
-            } else {
-                throw new GeneratedFailed(`Cannot match ${key} in ${target.id}, unmatched opcode.`);
-            };
-        } else
-            throw new GeneratedFailed(`Cannot match ${key} in ${target.id}, block instance isn't found.`);
+        const matches = parent.blockDecorated.filter(e => e.opcode === key);
+        if (matches.length > 1) {
+            throw new GeneratedFailed(`Cannot match ${key} in ${parent.onlyInstance.id}, repeated opcode.`);
+        } else if (matches.length < 1) {
+            throw new GeneratedFailed(`Cannot match ${key} in ${parent.onlyInstance.id}, block instance not found.`)
+        } else {
+            return matches[0];
+        }
     }
     export type TargetType = "sprite" | "stage";
     export function Hidden(target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {

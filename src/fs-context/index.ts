@@ -46,6 +46,7 @@ export namespace Extensions {
             for (const block of ext.blocks) {
                 if (block.type === "separator") {
                     blocks.push("---");
+                    continue;
                 }
                 let haveRest = false;
                 const args: Record<string, ArgumentPlain> = {};
@@ -60,6 +61,8 @@ export namespace Extensions {
                     filter: block.platform,
                     isEdgeActivated: block.edge
                 };
+                //@ts-ignore
+                if (block.type === "label") delete currentBlock.opcode;
                 if (block.overloads.length > 0) {
                     currentBlock.overloads = block.overloadedText;
                 };

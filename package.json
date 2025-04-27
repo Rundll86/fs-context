@@ -20,7 +20,8 @@
     }
   },
   "scripts": {
-    "project": "node cli.cjs"
+    "project": "node cli.cjs",
+    "postinstall": "node cli.cjs init"
   },
   "author": "FallingShrimp",
   "license": "MIT",
