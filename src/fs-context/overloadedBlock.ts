@@ -168,9 +168,9 @@ export function initOverloadedBlocks(extension: ExtensionPlain): void {
     if (extension[patchSymbol]) return;
     extension[patchSymbol] = true;
     proxyBlocklyBlocksObject(runtime);
-    extension.getInfo().blocks.forEach((block) => {
+    extension.getInfo().blocks.filter(e => typeof e !== "string").forEach((block) => {
         if (block.overloads) {
-            extInfo[extension.getInfo().id] = extension.getInfo().blocks.reduce((acc, cur) => {
+            extInfo[extension.getInfo().id] = extension.getInfo().blocks.filter(e => typeof e !== "string").reduce((acc, cur) => {
                 if (cur.overloads) {
                     console.log(cur);
                     acc[cur.opcode] = cur.overloads;

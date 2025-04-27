@@ -3,13 +3,6 @@ function createException(name: string) {
         constructor(message?: string) {
             super(message);
             this.name = name;
-            if (
-                window.callErrorOverlay
-                && window.ScratchWaterBoxed
-                && window.ScratchWaterBoxed.currentCatchErrors.includes(name)
-            ) {
-                window.callErrorOverlay(this);
-            };
         };
     };
 };

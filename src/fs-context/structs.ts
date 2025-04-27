@@ -89,7 +89,7 @@ export class Extension {
     };
     callBlock(opcode: string, arg: Record<string, any>) {
         if (this.generated) {
-            const block = this.generated.getInfo().blocks.find(i => i.opcode === opcode);
+            const block = this.generated.getInfo().blocks.filter(e => typeof e !== "string").find(i => i.opcode === opcode);
             if (block) {
                 this.generated[block.opcode].call(this, arg);
             } else {
@@ -307,7 +307,7 @@ export abstract class BlocklyInjector {
     private runtime: Scratch;
     private blockly: BlocklyType;
     private get availableBlocks(): BlockPlain[] {
-        return this.extension.getInfo().blocks?.filter(this.isAvailableBlock) ?? [];
+        return this.extension.getInfo().blocks?.filter(e => typeof e !== "string").filter(this.isAvailableBlock) ?? [];
     }
     public constructor(extension: ExtensionPlain) {
         if (!extension)
@@ -351,7 +351,7 @@ export abstract class BlocklyInjector {
         const originGetInfo = this.extension.getInfo.bind(this.extension);
         this.extension.getInfo = () => {
             const originInfo = originGetInfo();
-            originInfo.blocks = originInfo.blocks?.map(
+            originInfo.blocks = originInfo.blocks?.filter(e => typeof e !== "string").map(
                 block => this.isAvailableBlock(block) ? this.configMap(block) : block
             ) ?? [];
             return this.getInfo(originInfo) ?? originInfo;
@@ -427,6 +427,27 @@ export namespace BlockMode {
             };
         };
     }
+    export function LabelBefore(text: string) {
+        return function (target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
+            const parent = OriginalState.getConstructor<typeof Extension>(target);
+            const myselfIndex = parent.blockDecorated.indexOf(matchBlock(target, propertyKey, descriptor));
+            parent.blockDecorated.splice(myselfIndex, 0, Block.create(text, { type: "label" }));
+        };
+    }
+    export function LabelAfter(text: string) {
+        return function (target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
+            const parent = OriginalState.getConstructor<typeof Extension>(target);
+            const myselfIndex = parent.blockDecorated.indexOf(matchBlock(target, propertyKey, descriptor));
+            parent.blockDecorated.splice(myselfIndex + 1, 0, Block.create(text, { type: "label" }));
+        };
+    }
+    export function Separator(position: "before" | "after") {
+        return function (target: Extension, propertyKey: string, descriptor: PropertyDescriptor) {
+            const parent = OriginalState.getConstructor<typeof Extension>(target);
+            const myselfIndex = parent.blockDecorated.indexOf(matchBlock(target, propertyKey, descriptor));
+            parent.blockDecorated.splice(myselfIndex + (position === "before" ? 0 : 1), 0, Block.create("", { type: "separator" }));
+        };
+    }
 }
 export namespace BlockType {
     export function Plain(type: BlockTypePlain, text: string | string[]) {
@@ -454,8 +475,5 @@ export namespace BlockType {
     }
     export function Hat(text: string | string[]) {
         return Plain("hat", text);
-    }
-    export function Label(text: string | string[]) {
-        return Plain("label", text);
     }
 }

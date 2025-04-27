@@ -5,6 +5,7 @@ import type {
     ArgumentPlain,
     BlockPlain,
     DynamicArgConfigPlain,
+    ExtensionInfo,
     ExtensionPlain,
     HexColorString,
     MenuPlain,
@@ -41,8 +42,11 @@ export namespace Extensions {
                     }
                 });
             });
-            const blocks: BlockPlain[] = [];
+            const blocks: ExtensionInfo["blocks"] = [];
             for (const block of ext.blocks) {
+                if (block.type === "separator") {
+                    blocks.push("---");
+                }
                 let haveRest = false;
                 const args: Record<string, ArgumentPlain> = {};
                 const currentBlock: BlockPlain = {
@@ -62,7 +66,7 @@ export namespace Extensions {
                 for (const argIndex in block.plainArguments) {
                     const arg = block.plainArguments[argIndex];
                     const argIndexNumber = Number(argIndex);
-                    const partIndexNumber = block.parts.findIndex(e=>e===arg);
+                    const partIndexNumber = block.parts.findIndex(e => e === arg);
                     const lastArg = block.plainArguments[argIndexNumber - 1];
                     const nextArg = block.plainArguments[argIndexNumber + 1];
                     const lastPart = block.parts[partIndexNumber - 1];

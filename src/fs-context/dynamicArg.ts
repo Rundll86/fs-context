@@ -496,7 +496,8 @@ export function initExpandableBlocks(extension: ExtensionPlain, plusImage = righ
         const info = origGetInfo.call(this);
         const { id, blocks: blocksInfo } = info;
         extInfo[id] = { id, PlusSelectButton, PlusButton, MinusButton };
-        blocksInfo.forEach((i: { opcode: string; dynamicArgsInfo?: any; }) => {
+        blocksInfo.forEach((i: { opcode: string; dynamicArgsInfo?: any; } | string) => {
+            if (typeof i === "string") return;
             const { dynamicArgsInfo } = i;
             if (dynamicArgsInfo) {
                 dynamicArgsInfo.dynamicArgTypes = dynamicArgsInfo.dynamicArgTypes || ["string"];

@@ -40,7 +40,7 @@ export interface ScratchWaterBoxed extends Scratch {
     currentCatchErrors: string[];
     languageStore: Record<string, LanguageStored>;
 }
-export type BlockTypePlain = "command" | "reporter" | "Boolean" | "hat" | "label";
+export type BlockTypePlain = "command" | "reporter" | "Boolean" | "hat" | "label" | "separator";
 export type ExtractField<A extends (string | ArgumentDefine)[]> = {
     [K in keyof A as A[K] extends ArgumentDefine<infer R> ? R : never]: any;
 }
@@ -195,7 +195,7 @@ export type ExtensionPlain = {
 export interface ExtensionInfo {
     id: string;
     name: string;
-    blocks: BlockPlain[];
+    blocks: (BlockPlain | "---")[];
     menus: Record<string, MenuPlain>;
     color1: HexColorString;
     color2: HexColorString;

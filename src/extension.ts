@@ -11,15 +11,15 @@ export default class MyExtension extends Extension {
             },
         }
     };
+    @BlockMode.LabelBefore("数组相关")
     @BlockMode.ToDynamic("data", { joinCh: ",", defaultValues: ["apple,pear,banana", "onion,cabbage,tomato"] })
     @BlockType.Reporter("随机返回[data:textarray]中的一个")
     randomReturn({ data }: { data: string[][] }) {
         return data.flat(Infinity)[Random.integer(0, data.length - 1)];
     }
-    @BlockMode.Filt("sprite")
-    @BlockMode.UseMonitor
-    @BlockMode.ThreadRestartable
-    @BlockMode.ActiveEdge
+    @BlockMode.Separator("before")
+    @BlockMode.LabelBefore("计算相关")
+    @BlockMode.Separator("after")
     @BlockType.Reporter([
         "计算[num1:number=114]+[num2:number=514]",
         "计算[num1:number=114]-[num2:number=514]",
@@ -34,6 +34,7 @@ export default class MyExtension extends Extension {
         ];
         return overloadMap[overloadIndex](num1, num2);
     }
+    @BlockMode.LabelBefore("隐藏区")
     @BlockMode.Hidden
     @BlockType.Command("这个积木已隐藏")
     hiddenBlock() { }
