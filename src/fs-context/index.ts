@@ -6,10 +6,11 @@ import type {
     BlockPlain,
     DynamicArgConfigPlain,
     ExtensionInfo,
+    ExtensionMetadataLoader,
     ExtensionPlain,
+    ExtensionRegister,
     HexColorString,
     MenuPlain,
-    PlatformSupported,
     Scratch,
     ScratchWaterBoxed
 } from "./internal";
@@ -18,7 +19,9 @@ import type { Extension } from "./structs";
 import { Menu } from "./structs";
 import "./styles/common.css";
 import { Cast } from "./tools";
+import { GandiIDE, TurboWarp } from "./built-ins/registers";
 export namespace Extensions {
+    const registers: Record<string, ExtensionRegister> = { TurboWarp, GandiIDE };
     function generateConstructor(extension: typeof Extension): new (runtime?: Scratch) => ExtensionPlain {
         const ext = extension.onlyInstance;
         function ExtensionConstructor(this: ExtensionPlain, runtime?: Scratch): ExtensionPlain {
@@ -29,6 +32,7 @@ export namespace Extensions {
                 window.ScratchWaterBoxed ?? window.Scratch ?? {},
                 runtime?.vm?.runtime ?? {},
                 { runtime });
+            console.log("Got runtime:", runtimeAssigned);
             ext.runtime = runtimeAssigned;
             if (!ext.allowSandboxed) {
                 ext.canvas = runtime?.renderer.canvas;
@@ -223,6 +227,9 @@ export namespace Extensions {
         };
         return ExtensionConstructor as any;
     }
+    export function useRegister(name: string, register?: ExtensionRegister) {
+        registers[name] = register ?? (() => { });
+    }
     export function isInWaterBoxed(data?: typeof window.ScratchWaterBoxed): data is ScratchWaterBoxed {
         return !!window.ScratchWaterBoxed;
     }
@@ -231,7 +238,7 @@ export namespace Extensions {
         if (window.Scratch) return window.Scratch;
         return;
     }
-    export function load(extension: typeof Extension) {
+    export function load(extension: typeof Extension): ExtensionMetadataLoader {
         const constructorPlain = extension;
         const constructorGenerated = generateConstructor(extension);
         const objectPlain = extension.onlyInstance;
@@ -244,26 +251,18 @@ export namespace Extensions {
                 plain: constructorPlain,
                 generated: constructorGenerated
             },
-            to(...platforms: PlatformSupported[]) {
+            to(...platforms: string[]) {
                 for (const platform of platforms) {
                     console.log(`Trying to load FSExtension "${objectPlain.id}" on platform "${platform}"...`);
-                    if (platform === "TurboWarp") {
-                        scratch.extensions.register(objectGenerated);
-                    } else if (platform === "GandiIDE") {
-                        window.tempExt = {
-                            Extension: constructorGenerated,
-                            info: {
-                                extensionId: objectPlain.id,
-                                name: objectPlain.displayName,
-                                description: objectPlain.description,
-                                featured: true,
-                                disabled: false,
-                                collaboratorList: objectPlain.collaborators
-                            }
+                    let registered = false;
+                    for (const register in registers) {
+                        if (register === platform) {
+                            registers[register].call(null, this, scratch);
+                            registered = true;
+                            break;
                         };
-                    } else {
-                        throw new UncognizedError(`Unknown platform "${platform}"`);
                     };
+                    if (!registered) throw new UncognizedError(`Unknown platform "${platform}", use a external register.`);
                     if (isInWaterBoxed()) {
                         scratch.currentExtension = objectGenerated;
                         scratch.currentExtensionPlain = objectPlain;

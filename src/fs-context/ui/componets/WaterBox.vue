@@ -63,7 +63,7 @@ export default {
             this.extensionLoaded = false;
             import("@framework/entry").then((e) => {
                 let ext = e.extension;
-                if (!ext) { console.log("abc"); return; };
+                if (!ext) return;
                 const colors = ext.calcColor();
                 this.colorBlock = colors.block;
                 this.colorInputer = colors.inputer;

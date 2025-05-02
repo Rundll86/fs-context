@@ -56,13 +56,6 @@ import WButton from "./WButton.vue";
 </script>
 <script lang="ts">
 export default {
-    mounted() {
-        window.callErrorOverlay = (e) => {
-            this.open = true;
-            this.info = e.stack?.split("\n") || [];
-            console.log(e);
-        };
-    },
     data() {
         return {
             open: false,

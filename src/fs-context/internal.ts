@@ -81,7 +81,7 @@ export type TranslatorStoredData = {
     [K in LanguageSupported]?: LanguageStored;
 }
 export type LanguageSupported = "zh-cn" | "en";
-export type PlatformSupported = "GandiIDE" | "TurboWarp";
+// export type PlatformSupported = "GandiIDE" | "TurboWarp";
 export type LanguageStored = { [key: string]: string; };
 export type ArgumentPartType = "text" | "input";
 export type InputType = "string" | "number" | "bool" | "menu" | "angle" | "color" | "hat-paramater";
@@ -146,7 +146,7 @@ export type AcceptedArgType = InputTypeCast[FilterOut<InputType, "">];
 export interface LoaderConfig {
     target: typeof Extension | SubOfAbstractClassConstructor<typeof BlocklyInjector>;
     errorCatches: (new () => Error)[];
-    platform: PlatformSupported[];
+    platform: string[];
     mode: "debug" | "release";
 }
 export type SubOfAbstractClassConstructor<
@@ -272,4 +272,17 @@ export type DynamicArgConfigPlain = {
 export type DynamicArgConfigDefine = {
     [K in keyof DynamicArgConfigPlain as K extends "afterArg" | "dynamicArgTypes" ? never : K]:
     DynamicArgConfigPlain[K];
+};
+export interface ExtensionMetadataLoader {
+    objectPlain: Extension;
+    objectGenerated: ExtensionPlain;
+    constructors: {
+        plain: typeof Extension;
+        generated: new (runtime?: Scratch) => ExtensionPlain;
+    };
+    to(...platforms: string[]): void;
+    debugPrint(): void;
+}
+export interface ExtensionRegister {
+    (metadata: ExtensionMetadataLoader, scratch: ScratchWaterBoxed): any;
 };

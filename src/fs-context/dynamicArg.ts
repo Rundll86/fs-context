@@ -37,6 +37,7 @@ function getEventListener(e: AllFunction[]) {
 function getScratchBlocks(runtime: Scratch) {
     return (
         runtime.scratchBlocks ||
+        runtime.runtime.scratchBlocks ||
         window.ScratchBlocks ||
         hijack(getEventListener(runtime._events.EXTENSION_ADDED))?.ScratchBlocks
     );

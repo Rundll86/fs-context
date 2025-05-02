@@ -23,6 +23,7 @@ function getEventListener(e: AllFunction[]) {
 function getScratchBlocks(runtime: Scratch): BlocklyType {
     return (
         runtime.scratchBlocks ||
+        runtime.runtime.scratchBlocks ||
         window.ScratchBlocks ||
         hijack(getEventListener(runtime._events.EXTENSION_ADDED))?.ScratchBlocks
     );
@@ -172,7 +173,6 @@ export function initOverloadedBlocks(extension: ExtensionPlain): void {
         if (block.overloads) {
             extInfo[extension.getInfo().id] = extension.getInfo().blocks.filter(e => typeof e !== "string").reduce((acc, cur) => {
                 if (cur.overloads) {
-                    console.log(cur);
                     acc[cur.opcode] = cur.overloads;
                 };
                 return acc;
