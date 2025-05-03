@@ -1,36 +1,6 @@
 import { InputLoader } from "@framework/internal";
 import { BlockMode, BlockType, Extension } from "@framework/structs";
 import { DOM, Random } from "@framework/tools";
-import { api, type, Extension as ClipCCExtension } from "clipcc-extension";
-import { Extensions } from "@framework/index";
-Extensions.useRegister("clipcc", (metadata) => {
-    class Clip extends ClipCCExtension {
-        onInit(): void {
-            api.addCategory({
-                categoryId: metadata.objectPlain.id,
-                messageId: `${metadata.objectPlain.id}.name`,
-                color: metadata.objectPlain.calcColor().block
-            });
-            metadata.objectPlain.blocks.forEach(block => {
-                api.addBlock({
-                    opcode: block.opcode,
-                    type: ({
-                        command: 1,
-                        reporter: 2,
-                        boolean: 3,
-                        hat: 5
-                    } as Record<string, number>)[block.type] ?? 1,
-                    messageId: `${metadata.objectPlain.id}.${block.opcode}.name`,
-                    categoryId: `${metadata.objectPlain.id}.${block.opcode}`,
-                    function: block.method
-                });
-            });
-        }
-        onUninit(): void {
-            api.removeCategory(metadata.objectPlain.id);
-        }
-    }
-});
 export default class MyExtension extends Extension {
     id = "myextension";
     displayName = "My Extension";
