@@ -1,13 +1,14 @@
 {
   "name": "fs-context",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "types": "src/fs-context/index.ts",
   "main": "lib/src/fs-context/index.js",
   "files": [
     "lib",
     "src",
     "types",
-    "cli.cjs"
+    "cli.cjs",
+    "tsconfig.*"
   ],
   "exports": {
     ".": "./lib/src/fs-context/index.js",
