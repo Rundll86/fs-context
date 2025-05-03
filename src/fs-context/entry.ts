@@ -1,8 +1,13 @@
 import { Extensions } from ".";
-import type { ScratchWaterBoxed } from "@framework/internal";
+import type { ExtensionPlain, ScratchWaterBoxed } from "@framework/internal";
 import loaderConfig from "@config/loader";
 import { Extension } from "./structs";
 import { OriginalState } from "./tools";
+try {
+    window.FSContext = Extensions;
+} catch {
+    console.warn("Failed to inject FS-Context, some plugins will be invalid.");
+}
 declare let injectBlocks: (extension: ExtensionPlain) => void;
 const currentScratch = Extensions.getScratch() as ScratchWaterBoxed;
 if (currentScratch) {

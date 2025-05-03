@@ -1,9 +1,9 @@
-type Scratch = import("./internal").Scratch;
-type ScratchWaterBoxed = import("./internal").ScratchWaterBoxed;
-type ExtensionPlain = import("./internal").ExtensionPlain;
-type BlockPlain = import("./internal").BlockPlain;
+import type { Component } from "vue";
+import type { Extensions } from ".";
+import type { ScratchWaterBoxed, Scratch, ExtensionPlain, BlockPlain } from "./internal";
+import type { Collaborator } from "./structs";
 declare module "*.vue" {
-    const content: import("vue").Component;
+    const content: Component;
     export default content;
 }
 declare module "*.html" {
@@ -15,29 +15,32 @@ declare module "*.md" {
     export default content;
 }
 declare module "*.css" {
-    const content: Record<string, never>;
+    const content: Record<never, never>;
     export default content;
 }
 declare module "*.svg" {
     const content: string;
     export default content;
 }
-declare interface Window {
-    ScratchWaterBoxed?: ScratchWaterBoxed;
-    Scratch?: Scratch;
-    __VUE_OPTIONS_API__: boolean;
-    __VUE_PROD_DEVTOOLS__: boolean;
-    __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: boolean;
-    tempExt?: {
-        Extension: new (runtime: Scratch) => ExtensionPlain,
-        info: {
-            extensionId: string,
-            name: string,
-            description: string,
-            featured: boolean,
-            disabled: boolean,
-            collaboratorList: import("./structs").Collaborator[]
-        }
-    };
-    ScratchBlocks?: BlockPlain[];
+declare global {
+    interface Window {
+        ScratchWaterBoxed?: ScratchWaterBoxed;
+        Scratch?: Scratch;
+        __VUE_OPTIONS_API__: boolean;
+        __VUE_PROD_DEVTOOLS__: boolean;
+        __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: boolean;
+        tempExt?: {
+            Extension: new (runtime: Scratch) => ExtensionPlain,
+            info: {
+                extensionId: string,
+                name: string,
+                description: string,
+                featured: boolean,
+                disabled: boolean,
+                collaboratorList: Collaborator[]
+            }
+        };
+        ScratchBlocks?: BlockPlain[];
+        FSContext?: typeof Extensions;
+    }
 }

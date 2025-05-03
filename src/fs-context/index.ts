@@ -10,6 +10,7 @@ import type {
     ExtensionPlain,
     ExtensionRegister,
     HexColorString,
+    InputLoader,
     MenuPlain,
     Scratch,
     ScratchWaterBoxed
@@ -22,6 +23,7 @@ import { Cast } from "./tools";
 import { GandiIDE, TurboWarp } from "./built-ins/registers";
 export namespace Extensions {
     const registers: Record<string, ExtensionRegister> = { TurboWarp, GandiIDE };
+    const loaders: Record<string, InputLoader> = {};
     function generateConstructor(extension: typeof Extension): new (runtime?: Scratch) => ExtensionPlain {
         const ext = extension.onlyInstance;
         function ExtensionConstructor(this: ExtensionPlain, runtime?: Scratch): ExtensionPlain {
@@ -229,6 +231,12 @@ export namespace Extensions {
     }
     export function useRegister(name: string, register?: ExtensionRegister) {
         registers[name] = register ?? (() => { });
+    }
+    export function registLoader(name: string, loader?: InputLoader) {
+        loaders[name] = loader ?? { load() { } };
+    }
+    export function useLoader(name: string): InputLoader {
+        return loaders[name] ?? null;
     }
     export function isInWaterBoxed(data?: typeof window.ScratchWaterBoxed): data is ScratchWaterBoxed {
         return !!window.ScratchWaterBoxed;
