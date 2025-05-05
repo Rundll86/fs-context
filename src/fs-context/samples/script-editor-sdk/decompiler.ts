@@ -50,7 +50,11 @@ async function readBlob(file: Blob): Promise<string> {
     });
 }
 export class ScriptPlayer {
-    public static nounMatcher = /(\$|\[)\w+[:.]\s*\d+\s*(;|\])/g;
+    public static allowedPairs = ["$;", "[]", "{}"];
+    public static allowedSeparators = ":.>%~#@→↣↝↠↣↦⇀⇏⇒⇥⇨⇢⇰⇸⇻⇾▸▹▶▷►▻";
+    public static nounSpliter = new RegExp(`[${ScriptPlayer.allowedSeparators.split("").map(char => "\\" + char).join("")}]`, "g");
+    public static centerd = `\\w+${ScriptPlayer.nounSpliter.source}\\s*\\d+\\s*`;
+    public static nounMatcher = new RegExp(ScriptPlayer.allowedPairs.map(pair => `(\\${pair[0]}${ScriptPlayer.centerd}\\${pair[1]})`).join("|"), "g");
     public static unknownNounTip = "▸未知名词◂";
     private project?: ProjectData;
     public format<T extends keyof Node>(node: Node, key: T): Node[T] {
@@ -58,7 +62,7 @@ export class ScriptPlayer {
         if (key === "message") {
             return node.message.replace(ScriptPlayer.nounMatcher, match => {
                 if (!this.project) throw new Error("Project not loaded");
-                const data = match.slice(1, -1).split(/[:.]/);
+                const data = match.slice(1, -1).split(ScriptPlayer.nounSpliter);
                 const [refer, index] = [data[0].trim(), Number(data[1]) - 1];
                 if (!this.project.nouns.some(nounSrc => nounSrc.refer === refer)) return match;
                 return this.project.nouns.find(nounSrc => nounSrc.refer === refer)?.calls[index] ?? ScriptPlayer.unknownNounTip;
