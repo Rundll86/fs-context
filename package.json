@@ -59,6 +59,7 @@
   },
   "dependencies": {
     "@types/crypto-js": "^4.2.2",
+    "@zip.js/zip.js": "^2.7.60",
     "clipcc-extension": "^0.2.0",
     "crypto-js": "^4.2.0",
     "highlight.js": "^11.10.0",

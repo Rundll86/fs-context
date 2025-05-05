@@ -18,7 +18,7 @@ if (currentScratch) {
             extensionLoaded.debugPrint();
             console.warn("You're running on a Debug environment, don't publish it on production! It could divulge Scratch Runtime.");
             console.warn("Check `mode` of @config/loader.ts to `release` to close this warning.");
-            if (OriginalState.everyIncludes(
+            if (!OriginalState.everyIncludes(
                 extensionLoaded.objectPlain.id,
                 "abcdefghijklmnopqrstuvwxyz"
             )) {

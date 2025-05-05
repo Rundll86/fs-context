@@ -40,7 +40,7 @@ export interface ScratchWaterBoxed extends Scratch {
     currentCatchErrors: string[];
     languageStore: Record<string, LanguageStored>;
 }
-export type BlockTypePlain = "command" | "reporter" | "Boolean" | "hat" | "label" | "separator";
+export type BlockTypePlain = "command" | "reporter" | "Boolean" | "hat" | "label" | "separator" | "event";
 export type ExtractField<A extends (string | ArgumentDefine)[]> = {
     [K in keyof A as A[K] extends ArgumentDefine<infer R> ? R : never]: any;
 }
@@ -75,7 +75,7 @@ export type InputTypeCast = {
     menu: Menu | string;
     angle: number;
     color: HexColorString;
-    "hat-paramater": string;
+    "hat-parameter": string;
 }
 export type TranslatorStoredData = {
     [K in LanguageSupported]?: LanguageStored;
@@ -84,8 +84,8 @@ export type LanguageSupported = "zh-cn" | "en";
 // export type PlatformSupported = "GandiIDE" | "TurboWarp";
 export type LanguageStored = { [key: string]: string; };
 export type ArgumentPartType = "text" | "input";
-export type InputType = "string" | "number" | "bool" | "menu" | "angle" | "color" | "hat-paramater";
-export const AcceptedInputType = ["string", "number", "bool", "menu", "angle", "color", "hat-paramater"];
+export type InputType = typeof AcceptedInputType[number];
+export const AcceptedInputType = ["string", "number", "bool", "menu", "angle", "color", "hat-parameter"] as const;
 export const InputTypeCastConstructor: Record<string, any> = {
     string: String,
     number: Number,
@@ -93,7 +93,7 @@ export const InputTypeCastConstructor: Record<string, any> = {
     menu: String,
     angle: Number,
     color: String,
-    "hat-paramater": String,
+    "hat-parameter": String,
 };
 export interface ScratchTranslateFunction {
     language: LanguageSupported;

@@ -475,4 +475,7 @@ export namespace BlockType {
     export function Hat(text: string | string[]) {
         return Plain("hat", text);
     }
+    export function Event(text: string | string[]) {
+        return Plain("event", text);
+    }
 }

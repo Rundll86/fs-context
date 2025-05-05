@@ -4,6 +4,7 @@ import {
     ElementContext,
     HexColorString,
     InputType,
+    Scratch,
 } from "./internal";
 import { Extension } from "./structs";
 import { ExtensionLoadError, MissingError, SyntaxError } from "./exceptions";
@@ -138,7 +139,7 @@ export namespace Cast {
     export function castInputType(inputType: InputType) {
         const inputTypeCastToScratch: any = {
             bool: "Boolean",
-            "hat-paramater": "ccw_hat_parameter"
+            "hat-parameter": "ccw_hat_parameter"
         };
         return Object.hasOwn(inputTypeCastToScratch, inputType) ? inputTypeCastToScratch[inputType] : inputType;
     }

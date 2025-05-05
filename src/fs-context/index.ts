@@ -27,9 +27,6 @@ export namespace Extensions {
     function generateConstructor(extension: typeof Extension): new (runtime?: Scratch) => ExtensionPlain {
         const ext = extension.onlyInstance;
         function ExtensionConstructor(this: ExtensionPlain, runtime?: Scratch): ExtensionPlain {
-            if (!runtime?.extensions?.unsandboxed && !ext.allowSandboxed) {
-                throw new ExtensionLoadError(`FSExtension "${ext.id}" must be supported unsandboxed.`);
-            };
             const runtimeAssigned = Object.assign({},
                 window.ScratchWaterBoxed ?? window.Scratch ?? {},
                 runtime?.vm?.runtime ?? {},
@@ -210,14 +207,18 @@ export namespace Extensions {
                     _processArg(arg);
                     const { $overloadIndex } = arg;
                     if ($overloadIndex !== undefined) delete arg.$overloadIndex;
-                    const result = block.method.call(ext, arg, $overloadIndex ?? 0);
-                    if (result instanceof Promise) {
-                        return result.then((result) => {
+                    try {
+                        const result = block.method.call(ext, arg, $overloadIndex ?? 0);
+                        if (result instanceof Promise) {
+                            return result.then((result) => {
+                                return typeof result === "string" ? result : JSON.stringify(result);
+                            }).catch(err => { throw err; });
+                        } else {
                             return typeof result === "string" ? result : JSON.stringify(result);
-                        }).catch(err => { throw err; });
-                    } else {
-                        return typeof result === "string" ? result : JSON.stringify(result);
-                    };
+                        };
+                    } catch (err) {
+                        console.warn(`Error while running block ${block.opcode} of extension ${ext.id}`);
+                    }
                 };
             });
             ext.generated = result;
