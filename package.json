@@ -63,6 +63,7 @@
     "clipcc-extension": "^0.2.0",
     "crypto-js": "^4.2.0",
     "highlight.js": "^11.10.0",
+    "key-mirror": "^1.0.1",
     "md5": "^2.3.0",
     "seedrandom": "^3.0.5",
     "vue": "^3.5.12"

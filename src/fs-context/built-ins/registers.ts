@@ -1,4 +1,4 @@
-import type { ExtensionRegister, FilterKey, FilterOut } from "@framework/internal";
+import type { ExtensionRegister, Just } from "@framework/internal";
 export const TurboWarp: ExtensionRegister = (metadata, scratch) => {
     scratch.extensions.register(metadata.objectGenerated);
 };
@@ -15,7 +15,3 @@ export const GandiIDE: ExtensionRegister = (metadata) => {
         }
     };
 };
-export const InternalRegisters: Record<FilterOut<keyof typeof import("./registers"), "InternalRegisters">, string> = Object.keys(require("./registers")).reduce((pre, cur) => {
-    pre[cur] = cur;
-    return pre;
-}, {} as Record<string, string>);

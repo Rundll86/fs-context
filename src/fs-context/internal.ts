@@ -143,12 +143,16 @@ export type FilterKey<T, K> = {
 }
 export type FilterOut<T, U> = T extends U ? never : T;
 export type AcceptedArgType = InputTypeCast[FilterOut<InputType, "">];
+export type ExtensionOrBlocklyInjector = typeof Extension | SubOfAbstractClassConstructor<typeof BlocklyInjector>
 export interface LoaderConfig {
-    target: typeof Extension | SubOfAbstractClassConstructor<typeof BlocklyInjector>;
+    target: CopyAsGenericsOfPromise<ExtensionOrBlocklyInjector> | CopyAsGenericsOfPromise<Record<"default", ExtensionOrBlocklyInjector>>;
     errorCatches: (new () => Error)[];
-    platform: string[];
+    platform: InternalSupportedPlatform[];
     mode: "debug" | "release";
 }
+export type InternalRegistersLibrary = Just<typeof import("@framework/built-ins/registers"), ExtensionRegister>;
+export type InternalSupportedPlatform = keyof InternalRegistersLibrary;
+export type KeyMirrored<T> = { [K in keyof T]: K };
 export type SubOfAbstractClassConstructor<
     T extends abstract new (...args: any[]) => any
 > =
@@ -285,4 +289,5 @@ export interface ExtensionMetadataLoader {
 }
 export interface ExtensionRegister {
     (metadata: ExtensionMetadataLoader, scratch: ScratchWaterBoxed): any;
-};
+}
+export type Just<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] };

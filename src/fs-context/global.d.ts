@@ -23,6 +23,9 @@ declare module "*.svg" {
     export default content;
 }
 declare global {
+    interface ObjectConstructor {
+        hasOwn<T, K extends string | number | symbol>(obj: T, key: K): obj is T & Record<K, any>;
+    }
     interface Window {
         ScratchWaterBoxed?: ScratchWaterBoxed;
         Scratch?: Scratch;

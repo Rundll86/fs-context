@@ -1,6 +1,6 @@
 import { getDynamicArgs, initExpandableBlocks } from "./dynamicArg";
 import { initOverloadedBlocks } from "./overloadedBlock";
-import { ExtensionLoadError, GeneratedFailed, MissingError, UncognizedError } from "./exceptions";
+import { GeneratedFailed, MissingError, UncognizedError } from "./exceptions";
 import type {
     ArgumentPlain,
     BlockPlain,
@@ -11,6 +11,7 @@ import type {
     ExtensionRegister,
     HexColorString,
     InputLoader,
+    InternalSupportedPlatform,
     MenuPlain,
     Scratch,
     ScratchWaterBoxed
@@ -247,6 +248,10 @@ export namespace Extensions {
         if (window.Scratch) return window.Scratch;
         return;
     }
+    export function expandedPlatform(name: string) {
+        return name as InternalSupportedPlatform;
+    }
+    export function justPlaceholder() { }
     export function load(extension: typeof Extension): ExtensionMetadataLoader {
         const constructorPlain = extension;
         const constructorGenerated = generateConstructor(extension);
