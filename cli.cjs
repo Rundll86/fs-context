@@ -117,6 +117,12 @@ devCommand.command("waterbox")
         });
         new WebpackDevServer(merge(commonConfig.devServer, waterboxConfig.devServer), compiler).start();
     });
+program.command("update")
+    .description("pull the latest version of the framework")
+    .action(() => {
+        console.log("Updating...");
+        run(["git", "pull"]);
+    })
 program.command("lint")
     .description("check code syntaxes and styles")
     .alias("eslint")
