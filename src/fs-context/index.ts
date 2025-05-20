@@ -126,12 +126,7 @@ export namespace Extensions {
             for (const menu of ext.menus) {
                 menus[menu.name] = {
                     acceptReporters: menu.acceptReporters,
-                    items: menu.items.map(item => {
-                        return {
-                            text: item.name,
-                            value: item.value
-                        };
-                    })
+                    items: menu.reaction ? menu.reactMethod : menu.generated
                 };
             };
             ext.calcColor();
@@ -149,6 +144,13 @@ export namespace Extensions {
                 },
                 runtime: ext.runtime
             };
+            ext.menus.filter(e => e.reaction).forEach(menu => {
+                const propertyKey = menu.name;
+                result[menu.reactMethod] = () => {
+                    const extCasted: Record<string, Menu> = ext as any;
+                    return extCasted[propertyKey].generated;
+                };
+            });
             ext.blocks.forEach(block => {
                 function _processArg(arg: Record<string, any>) {
                     function _useLoader(e: typeof argList[number], arg: Record<string, any>) {

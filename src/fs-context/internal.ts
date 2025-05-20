@@ -167,9 +167,10 @@ export interface MenuItemPlain {
     text: string;
     value: any;
 }
+export type MenuReactMethodName = `${string}_${string}_${number}`;
 export interface MenuPlain {
     acceptReporters: boolean;
-    items: MenuItemPlain[];
+    items: MenuItemPlain[] | MenuReactMethodName;
 }
 export interface ArgumentPlain {
     type?: InputType;

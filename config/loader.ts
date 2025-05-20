@@ -5,7 +5,7 @@ Extensions.justPlaceholder();
 const config: LoaderConfig = {
     target: import("@src/extension"),
     errorCatches: [Error, ExtensionLoadError],
-    platform: ["GandiIDE"],
+    platform: ["TurboWarp"],
     mode: "debug"
 };
 export default config;

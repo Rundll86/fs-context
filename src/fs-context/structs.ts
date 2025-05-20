@@ -18,10 +18,11 @@ import type {
     BlocklyType,
     ExtensionInfo,
     BlockPlain,
-    DynamicArgConfigDefine
+    DynamicArgConfigDefine,
+    MenuReactMethodName
 } from "./internal";
 import { ArgumentPart } from "./internal";
-import { Color, MenuParser, OriginalState, TextParser } from "./tools";
+import { Color, MenuParser, OriginalState, Random, TextParser } from "./tools";
 import { GeneratedFailed, InjectionError, MissingError, OnlyInstanceWarn } from "./exceptions";
 import md5 from "md5";
 import type { Block as BlocklyBlock } from "blockly";
@@ -63,10 +64,15 @@ export class Extension {
         if (!this.instance) {
             this.instance = new this(true);
             this.instance.blocks.push(...this.blockDecorated);
+            this.instance.menus.push(...this.menuDecorated);
         };
         return this.instance;
     };
     static blockDecorated: Block[] = [];
+    static menuDecorated: Menu[] = [];
+    static getTempInstance() {
+        return new this(true);
+    }
     calcColor() {
         if (this.autoDeriveColors) {
             if (this.colors.theme) {
@@ -213,15 +219,24 @@ export class Collaborator {
 export class Menu {
     acceptReporters: boolean = true;
     items: MenuItem[] = [];
-    name: string;
-    constructor(name: string, items?: MenuDefine, acceptReporters?: boolean) {
-        this.name = name;
-        if (acceptReporters !== undefined) {
-            this.acceptReporters = acceptReporters;
-        };
-        if (items !== undefined) {
-            this.items = MenuParser.normalize(items);
-        };
+    name: string = "unnamed";
+    reaction: boolean = false;
+    reactMethod: MenuReactMethodName = "__0";
+    constructor(items: MenuDefine, config?: Partial<Menu>) {
+        this.set(items);
+        Object.assign(this, config);
+    }
+    set(items?: MenuDefine) {
+        if (!items) return;
+        this.items = MenuParser.normalize(items);
+    }
+    get generated() {
+        return this.items.map(item => {
+            return {
+                text: item.name,
+                value: item.value
+            };
+        });
     }
 }
 export class Translator<L extends LanguageSupported, D extends LanguageStored> {
@@ -477,5 +492,91 @@ export namespace BlockType {
     }
     export function Event(text: string | string[]) {
         return Plain("event", text);
+    }
+}
+export namespace MenuMode {
+    function matchMenu(target: Extension, key: string): Menu {
+        const parent = OriginalState.getConstructor<typeof Extension>(target);
+        const matches = parent.menuDecorated.filter(menu => menu.name === key);
+        if (matches.length > 1) {
+            throw new GeneratedFailed(`Cannot match menu "${key}" in ${parent.onlyInstance.id}, repeated menu name.`);
+        } else if (matches.length < 1) {
+            throw new GeneratedFailed(`Cannot match menu "${key}" in ${parent.onlyInstance.id}, menu instance not found.`);
+        } else {
+            return matches[0];
+        }
+    }
+    export function RefuseReporters<T extends Extension & { [P in K]: Menu }, K extends keyof T>(target: T, propertyKey: K & string) {
+        matchMenu(target, propertyKey).acceptReporters = false;
+    }
+    export function Reaction<T extends Extension & { [P in K]: Menu }, K extends keyof T>(target: T, propertyKey: K & string) {
+        const parent = OriginalState.getConstructor<typeof Extension>(target);
+        const rawMenu = parent.getTempInstance()[propertyKey as keyof Extension] as Menu;
+        rawMenu.name = propertyKey;
+        rawMenu.reaction = true;
+        rawMenu.reactMethod = `${target.id}_${propertyKey}_${Random.integer(Number.MIN_VALUE, Number.MAX_VALUE)}`;
+        parent.menuDecorated.push(rawMenu);
+        // ↓↓废弃代码↓↓
+        /*
+        function update(data: Menu) {
+            const index = target.menus.findIndex(i => i === rawMenu);
+            //todo
+        }
+        function initProxyItems(menu: Menu) {
+            menu.items = new Proxy(menu.items, {
+                get(target, p, receiver) {
+                    const data = Reflect.get(target, p, receiver);
+                    if (typeof data === "function") {
+                        return (...args: any[]) => {
+                            const oldLength = target.length;
+                            const result = data(...args);
+                            const newLength = target.length;
+                            if (newLength > oldLength) {
+                                update(menu);
+                            }
+                            return result;
+                        };
+                    } else return data;
+                },
+                set(target, property, value) {
+                    const oldLength = target.length;
+                    const reflectState = Reflect.set(target, property, value);
+                    const newLength = target.length;
+                    if (newLength > oldLength) {
+                        update(menu);
+                    }
+                    return reflectState;
+                }
+            });
+        }
+        function initProxyMenuItems(menu: Menu) {
+            return new Proxy(menu, {
+                set(target, p, newValue: MenuItem[]) {
+                    update(menu);
+                    const reflectState = Reflect.set(target, p, newValue);
+                    if (p === "items") {
+                        initProxyItems(menu);
+                    }
+                    return reflectState;
+                },
+            });
+        }
+        function doReact(target: Menu) {
+            const menu = initProxyMenuItems(target);
+            initProxyItems(menu);
+            return menu;
+        }
+        const rawMenu = target[propertyKey];
+        rawMenu.reaction = true;
+        let menu = doReact(rawMenu);
+        Object.defineProperty(target, propertyKey, {
+            get() {
+                return menu;
+            },
+            set(value) {
+                menu = doReact(value);
+            }
+        });
+        */
     }
 }

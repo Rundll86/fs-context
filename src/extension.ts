@@ -1,5 +1,5 @@
 import { InputLoader } from "@framework/internal";
-import { BlockMode, BlockType, Extension } from "@framework/structs";
+import { BlockMode, BlockType, Extension, Menu, MenuMode } from "@framework/structs";
 import { DOM, Random } from "@framework/tools";
 export default class MyExtension extends Extension {
     id = "myextension";
@@ -11,6 +11,19 @@ export default class MyExtension extends Extension {
             },
         }
     };
+    @MenuMode.RefuseReporters
+    @MenuMode.Reaction
+    apple = new Menu("苹果,智慧果,超凡子,apple,林檎");
+    @BlockType.Command("吃[apple:menu]")
+    eatApple({ apple }: { apple: string }) {
+        this.apple.items = this.apple.items.filter(item => item.value !== apple);
+        alert(`你吃掉了${apple}`);
+    }
+    @BlockType.Command("吐[apple]")
+    addApple({ apple }: { apple: string }) {
+        this.apple.items.push({ value: apple, name: apple });
+        alert(`你吐出了${apple}`);
+    }
     @BlockMode.LabelBefore("数组相关")
     @BlockMode.ToDynamic("data", { joinCh: ",", defaultValues: ["apple,pear,banana", "onion,cabbage,tomato"] })
     @BlockType.Reporter("随机返回[data:textarray]中的一个")
@@ -39,16 +52,3 @@ export default class MyExtension extends Extension {
     @BlockType.Command("这个积木已隐藏")
     hiddenBlock() { }
 };
-const { elementTree } = DOM;
-const tree = elementTree("div", [
-    elementTree("span").attribute("innerHTML", "Hello World!"),
-    elementTree("img").attribute("src", "https://example.com/image.png"),
-    elementTree("div", [
-        elementTree("span", [
-            //@ts-ignore
-            elementTree("apple").attribute("juice", 114514),
-        ]),
-        elementTree("img").attribute("src", "https://example.com/image.png")
-    ])
-]);
-tree.result
