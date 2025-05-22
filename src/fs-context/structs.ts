@@ -19,7 +19,10 @@ import type {
     ExtensionInfo,
     BlockPlain,
     DynamicArgConfigDefine,
-    MenuReactMethodName
+    MenuReactMethodName,
+    MenuPlain,
+    MenuItemPlain,
+    ReadbackFunction
 } from "./internal";
 import { ArgumentPart } from "./internal";
 import { Color, MenuParser, OriginalState, Random, TextParser } from "./tools";
@@ -216,12 +219,13 @@ export class Collaborator {
         this.url = url;
     }
 }
-export class Menu {
+export class Menu<O extends Extension = Extension> {
     acceptReporters: boolean = true;
     items: MenuItem[] = [];
     name: string = "unnamed";
-    reaction: boolean = false;
-    reactMethod: MenuReactMethodName = "__0";
+    reactive: boolean = false;
+    reactiveMethod: MenuReactMethodName = "__0";
+    readback: ReadbackFunction<O> = (menu) => menu.generated;
     constructor(items: MenuDefine, config?: Partial<Menu>) {
         this.set(items);
         Object.assign(this, config);
@@ -230,7 +234,7 @@ export class Menu {
         if (!items) return;
         this.items = MenuParser.normalize(items);
     }
-    get generated() {
+    get generated(): MenuItemPlain[] {
         return this.items.map(item => {
             return {
                 text: item.name,
@@ -506,77 +510,32 @@ export namespace MenuMode {
             return matches[0];
         }
     }
+    function getMenuInstance<T extends Extension>(target: T, key: string): Menu<T> {
+        const parent = OriginalState.getConstructor<typeof Extension>(target);
+        const menu = parent.getTempInstance()[key as keyof Extension] as Menu<T>;
+        return menu;
+    }
     export function RefuseReporters<T extends Extension & { [P in K]: Menu }, K extends keyof T>(target: T, propertyKey: K & string) {
         matchMenu(target, propertyKey).acceptReporters = false;
     }
-    export function Reaction<T extends Extension & { [P in K]: Menu }, K extends keyof T>(target: T, propertyKey: K & string) {
-        const parent = OriginalState.getConstructor<typeof Extension>(target);
-        const rawMenu = parent.getTempInstance()[propertyKey as keyof Extension] as Menu;
-        rawMenu.name = propertyKey;
-        rawMenu.reaction = true;
-        rawMenu.reactMethod = `${target.id}_${propertyKey}_${Random.integer(Number.MIN_VALUE, Number.MAX_VALUE)}`;
-        parent.menuDecorated.push(rawMenu);
-        // ↓↓废弃代码↓↓
-        /*
-        function update(data: Menu) {
-            const index = target.menus.findIndex(i => i === rawMenu);
-            //todo
+    export function Reactive(state: boolean) {
+        return function <T extends Extension & { [P in K]: Menu }, K extends keyof T>(target: T, propertyKey: K & string) {
+            const parent = OriginalState.getConstructor<typeof Extension>(target);
+            const rawMenu = getMenuInstance(target, propertyKey);
+            rawMenu.name = propertyKey;
+            rawMenu.reactive = state;
+            rawMenu.reactiveMethod = `${target.id}_${propertyKey}_${Random.integer(Number.MIN_VALUE, Number.MAX_VALUE)}`;
+            parent.menuDecorated.push(rawMenu as unknown as Menu<Extension>);
         }
-        function initProxyItems(menu: Menu) {
-            menu.items = new Proxy(menu.items, {
-                get(target, p, receiver) {
-                    const data = Reflect.get(target, p, receiver);
-                    if (typeof data === "function") {
-                        return (...args: any[]) => {
-                            const oldLength = target.length;
-                            const result = data(...args);
-                            const newLength = target.length;
-                            if (newLength > oldLength) {
-                                update(menu);
-                            }
-                            return result;
-                        };
-                    } else return data;
-                },
-                set(target, property, value) {
-                    const oldLength = target.length;
-                    const reflectState = Reflect.set(target, property, value);
-                    const newLength = target.length;
-                    if (newLength > oldLength) {
-                        update(menu);
-                    }
-                    return reflectState;
-                }
-            });
+    }
+    export function Readback<T extends Extension>(executor: ReadbackFunction<T>) {
+        return function <K extends keyof T>(target: T, propertyKey: K & string) {
+            const parent = OriginalState.getConstructor<typeof Extension>(target);
+            const rawMenu = getMenuInstance(target, propertyKey);
+            if (!rawMenu.reactive)
+                throw new GeneratedFailed(`Cannot set readback of menu "${propertyKey}" in ${parent.getTempInstance().id}, menu is not reactive.`);
+            rawMenu.name = propertyKey;
+            rawMenu.readback = executor;
         }
-        function initProxyMenuItems(menu: Menu) {
-            return new Proxy(menu, {
-                set(target, p, newValue: MenuItem[]) {
-                    update(menu);
-                    const reflectState = Reflect.set(target, p, newValue);
-                    if (p === "items") {
-                        initProxyItems(menu);
-                    }
-                    return reflectState;
-                },
-            });
-        }
-        function doReact(target: Menu) {
-            const menu = initProxyMenuItems(target);
-            initProxyItems(menu);
-            return menu;
-        }
-        const rawMenu = target[propertyKey];
-        rawMenu.reaction = true;
-        let menu = doReact(rawMenu);
-        Object.defineProperty(target, propertyKey, {
-            get() {
-                return menu;
-            },
-            set(value) {
-                menu = doReact(value);
-            }
-        });
-        */
     }
 }

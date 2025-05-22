@@ -97,6 +97,10 @@ export namespace TextParser {
     export function hasDefaultValue(arg: string) {
         return arg.includes("=");
     }
+    export function hasName(arg: string) {
+        (() => arg)();
+        return true;
+    }
     export function parseType(arg: string): InputType {
         if (!hasType(arg)) {
             return "string";

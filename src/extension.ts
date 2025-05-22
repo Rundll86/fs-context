@@ -11,8 +11,12 @@ export default class MyExtension extends Extension {
             },
         }
     };
+    // @BlockType.Reporter("返回[sth:menu(a,b,c)=c]")
+    returnSth({ sth }: { sth: string }) {
+        return sth;
+    }
     @MenuMode.RefuseReporters
-    @MenuMode.Reaction
+    @MenuMode.Reactive(true)
     apple = new Menu("苹果,智慧果,超凡子,apple,林檎");
     @BlockType.Command("吃[apple:menu]")
     eatApple({ apple }: { apple: string }) {

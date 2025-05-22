@@ -183,6 +183,7 @@ export namespace OriginalState {
     export function everyIncludes(parent: string, sub: string): boolean {
         return parent.split("").every(char => sub.includes(char));
     }
+    export function unused<T>(data: T): T { return data; }
 }
 export namespace Binary {
     export async function uploadFile(accept: string = "*") {

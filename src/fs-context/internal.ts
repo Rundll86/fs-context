@@ -292,3 +292,4 @@ export interface ExtensionRegister {
     (metadata: ExtensionMetadataLoader, scratch: ScratchWaterBoxed): any;
 }
 export type Just<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] };
+export type ReadbackFunction<T extends Extension> = (menu: Menu<T>, extension: T) => MenuItemPlain[];

@@ -3,6 +3,7 @@ const child_process = require("child_process");
 const webpack = require("webpack");
 const { merge } = require("webpack-merge");
 const WebpackDevServer = require("webpack-dev-server");
+const currentPackage = require("./package.json");
 /**
  * 
  * @param {string[]} cmd 
@@ -119,9 +120,18 @@ devCommand.command("waterbox")
     });
 program.command("update")
     .description("pull the latest version of the framework")
-    .action(() => {
+    .action(async () => {
+        console.log("Checking version...");
+        const latestPackage = await fetch("https://github.com/Rundll86/fs-context/blob/main/package.json").then(res => res.json());
+        if (latestPackage.version === currentPackage.version) {
+            console.log("Already up to date.");
+            return;
+        }
         console.log("Updating...");
-        run(["git", "pull"]);
+        await run(["git", "pull"]);
+        console.log("Installing...");
+        await run(["yarn", "install"]);
+        console.log("Done.");
     })
 program.command("lint")
     .description("check code syntaxes and styles")
