@@ -226,13 +226,17 @@ export class Menu<O extends Extension = Extension> {
     reactive: boolean = false;
     reactiveMethod: MenuReactMethodName = "__0";
     readback: ReadbackFunction<O> = (menu) => menu.generated;
-    constructor(items: MenuDefine, config?: Partial<Menu>) {
+    constructor(items?: MenuDefine, config?: Partial<Menu>) {
         this.set(items);
         Object.assign(this, config);
     }
-    set(items?: MenuDefine) {
-        if (!items) return;
-        this.items = MenuParser.normalize(items);
+    static from(items: MenuDefine, outputMode: MenuParser.OutputMode = MenuParser.OutputMode.PAIRS, config?: Partial<Menu>) {
+        return new Menu([], config).set(items, outputMode);
+    }
+    set(items?: MenuDefine, outputMode: MenuParser.OutputMode = MenuParser.OutputMode.PAIRS) {
+        if (!items) return this;
+        this.items = MenuParser.normalize(items, outputMode);
+        return this;
     }
     get generated(): MenuItemPlain[] {
         return this.items.map(item => {

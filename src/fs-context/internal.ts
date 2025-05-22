@@ -7,12 +7,14 @@ export class ArgumentPart {
     value: AcceptedArgType = "";
     inputType: InputType = "string";
     dyConfig?: DynamicArgConfigDefine;
-    constructor(content: string, type: ArgumentPartType, value?: AcceptedArgType, inputType?: InputType, dyConfig?: DynamicArgConfigDefine) {
+    inlineMenu?: string[];
+    constructor(content: string, type: ArgumentPartType, value?: AcceptedArgType, inputType?: InputType, dyConfig?: DynamicArgConfigDefine, inlineMenu?: string[]) {
         this.content = content;
         this.type = type;
         if (value) this.value = value;
         if (inputType) this.inputType = inputType;
         this.dyConfig = dyConfig;
+        this.inlineMenu = inlineMenu;
     }
 }
 export interface ArgumentDefine<T extends ValidArgumentName = ValidArgumentName> {

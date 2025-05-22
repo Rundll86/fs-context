@@ -11,7 +11,7 @@ export default class MyExtension extends Extension {
             },
         }
     };
-    // @BlockType.Reporter("返回[sth:menu(a,b,c)=c]")
+    @BlockType.Reporter("返回[sth:menu(a,b,c)=c]")
     returnSth({ sth }: { sth: string }) {
         return sth;
     }

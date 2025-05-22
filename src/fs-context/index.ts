@@ -20,7 +20,7 @@ import { AcceptedInputType } from "./internal";
 import type { Extension } from "./structs";
 import { Menu } from "./structs";
 import "./styles/common.css";
-import { Cast } from "./tools";
+import { Cast, MenuParser, Random } from "./tools";
 import { GandiIDE, TurboWarp } from "./built-ins/registers";
 export namespace Extensions {
     const registers: Record<string, ExtensionRegister> = { TurboWarp, GandiIDE };
@@ -118,6 +118,11 @@ export namespace Extensions {
                     if (amIRest) {
                         currentBlock.dynamicArgsInfo = myRestConfig;
                     };
+                    if (Array.isArray(arg.inlineMenu)) {
+                        const menuName = `${ext.id}_${block.opcode}_${argIndex}_inlineMenu_${Random.integer(Number.MIN_VALUE, Number.MAX_VALUE)}`;
+                        ext.menus.push(Menu.from(arg.inlineMenu, MenuParser.OutputMode.PAIRS, { name: menuName }));
+                        currentArg.menu = menuName;
+                    }
                     args[arg.content] = currentArg;
                 };
                 blocks.push(currentBlock);

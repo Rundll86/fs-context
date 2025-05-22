@@ -7,6 +7,7 @@ import type {
 import { ArgumentPart, InputTypeCastConstructor } from "./internal";
 export namespace MenuParser {
     let stringArraySeparator = ",";
+    export enum OutputMode { INDEX, KEY_MIRRORED, PAIRS }
     export function setSeparator(separator: string) {
         stringArraySeparator = separator;
     }
@@ -39,7 +40,7 @@ export namespace MenuParser {
     export function isKeyValueString(item: MenuDefine) {
         return typeof item === "string" && item.includes("=") && !isStringArray(item);
     }
-    export function normalize(items: MenuDefine): MenuItem[] {
+    export function normalize(items: MenuDefine, outputMode: OutputMode = OutputMode.PAIRS): MenuItem[] {
         const result: MenuItem[] = [];
         if (typeof items === "string") {
             if (isKeyValueString(items)) {
@@ -60,11 +61,16 @@ export namespace MenuParser {
         } else {
             result.push(trimSpaceMenuItem(items));
         };
-        return result;
+        if (outputMode === OutputMode.INDEX) {
+            return result.map((item, index) => ({ name: item.name, value: index }));
+        } else if (outputMode === OutputMode.KEY_MIRRORED) {
+            return result.map(item => ({ name: item.name, value: item.name }));
+        } else return result;
     }
 }
 export namespace TextParser {
     export const regex = /(\[.*?\])|(\$.*?;)/g;
+    export const inlineMenuRegex = /menu\(.*?\)/g;
     export function split(target: string): { text: string[], arg: string[] } {
         const arg: string[] = target.match(regex) || [];
         const text: string[] = target.split(regex);
@@ -85,7 +91,9 @@ export namespace TextParser {
                     parseName(parts.arg[index]),
                     "input",
                     parseDefaultValue(parts.arg[index]),
-                    parseType(parts.arg[index])
+                    parseType(parts.arg[index]),
+                    undefined,
+                    parseInlineMenu(parts.arg[index])
                 ));
             };
         });
@@ -101,6 +109,10 @@ export namespace TextParser {
         (() => arg)();
         return true;
     }
+    export function hasInlineMenu(argType: string) {
+        const matches = argType.match(inlineMenuRegex);
+        return matches && matches.length === 1;
+    }
     export function parseType(arg: string): InputType {
         if (!hasType(arg)) {
             return "string";
@@ -111,7 +123,9 @@ export namespace TextParser {
         if (hasDefaultValue(arg)) {
             result = result.split("=", 1)[0];
         };
-        return result.trim() as InputType;
+        const output = result.trim() as InputType;
+        if (hasInlineMenu(output)) return "menu";
+        else return output;
     }
     export function parseDefaultValue(arg: string): any | undefined {
         if (!hasDefaultValue(arg)) {
@@ -122,5 +136,9 @@ export namespace TextParser {
     }
     export function parseName(arg: string): string {
         return arg.split(/[:=]/)[0].trim();
+    }
+    export function parseInlineMenu(arg: string): string[] | undefined {
+        if (hasInlineMenu(arg)) return (arg.match(inlineMenuRegex)?.[0].slice(5, -1) ?? "").split(",").map(item => item.trim());
+        else return undefined;
     }
 }
