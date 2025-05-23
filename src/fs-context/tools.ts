@@ -25,6 +25,9 @@ export namespace Random {
     export function color(): HexColorString {
         return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
     }
+    export function choose<T>(items: T[]): T {
+        return items[integer(0, items.length - 1)];
+    }
 }
 export namespace DOM {
     export function elementTree<T extends keyof HTMLElementTagNameMap>(

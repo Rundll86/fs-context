@@ -281,8 +281,9 @@ export type DynamicArgConfigDefine = {
     DynamicArgConfigPlain[K];
 };
 export interface ExtensionMetadataLoader {
-    objectPlain: Extension;
-    objectGenerated: ExtensionPlain;
+    descriptors: {
+        plain: Extension;
+    }
     constructors: {
         plain: typeof Extension;
         generated: new (runtime?: Scratch) => ExtensionPlain;

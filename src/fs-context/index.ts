@@ -28,11 +28,13 @@ export namespace Extensions {
     function generateConstructor(extension: typeof Extension): new (runtime?: Scratch) => ExtensionPlain {
         const ext = extension.onlyInstance;
         function ExtensionConstructor(this: ExtensionPlain, runtime?: Scratch): ExtensionPlain {
+            console.log("Input runtime:", runtime);
             const runtimeAssigned = Object.assign({},
                 window.ScratchWaterBoxed ?? window.Scratch ?? {},
                 runtime?.vm?.runtime ?? {},
-                { runtime });
-            console.log("Got runtime:", runtimeAssigned);
+                { runtime },
+                runtime);
+            console.log("Assigned runtime:", runtimeAssigned);
             ext.runtime = runtimeAssigned;
             if (!ext.allowSandboxed) {
                 ext.canvas = runtime?.renderer.canvas;
@@ -120,8 +122,9 @@ export namespace Extensions {
                     };
                     if (Array.isArray(arg.inlineMenu)) {
                         const menuName = `${ext.id}_${block.opcode}_${argIndex}_inlineMenu_${Random.integer(Number.MIN_VALUE, Number.MAX_VALUE)}`;
-                        ext.menus.push(Menu.from(arg.inlineMenu, MenuParser.OutputMode.PAIRS, { name: menuName }));
+                        ext.menus.push(Menu.from(arg.inlineMenu, MenuParser.OutputMode.INDEX, { name: menuName }));
                         currentArg.menu = menuName;
+                        currentArg.defaultValue = arg.value;
                     }
                     args[arg.content] = currentArg;
                 };
@@ -267,8 +270,9 @@ export namespace Extensions {
         const objectGenerated = new constructorGenerated(getScratch());
         const scratch = getScratch() as ScratchWaterBoxed;
         return {
-            objectPlain,
-            objectGenerated,
+            descriptors: {
+                plain: objectPlain
+            },
             constructors: {
                 plain: constructorPlain,
                 generated: constructorGenerated

@@ -66,15 +66,19 @@ export class Extension {
     static get onlyInstance(): Extension {
         if (!this.instance) {
             this.instance = new this(true);
-            this.instance.blocks.push(...this.blockDecorated);
-            this.instance.menus.push(...this.menuDecorated);
-        };
+        }
+        this.instance.blocks = this.instance.blocks.filter(block => !this.blockDecorated.includes(block));
+        this.instance.menus = this.instance.menus.filter(menu => !this.menuDecorated.includes(menu));
+        this.instance.blocks.push(...this.blockDecorated);
+        this.instance.menus.push(...this.menuDecorated);
         return this.instance;
     };
     static blockDecorated: Block[] = [];
     static menuDecorated: Menu[] = [];
     static getTempInstance() {
-        return new this(true);
+        const instance = new this(true);
+        console.warn(`You are using a temporary instance of ${instance.id}. This instance is not registered in the system.`);
+        return instance;
     }
     calcColor() {
         if (this.autoDeriveColors) {
@@ -503,7 +507,7 @@ export namespace BlockType {
     }
 }
 export namespace MenuMode {
-    function matchMenu(target: Extension, key: string): Menu {
+    function matchMenu<T extends Extension>(target: T, key: string & keyof T): Menu<T> {
         const parent = OriginalState.getConstructor<typeof Extension>(target);
         const matches = parent.menuDecorated.filter(menu => menu.name === key);
         if (matches.length > 1) {
@@ -511,12 +515,12 @@ export namespace MenuMode {
         } else if (matches.length < 1) {
             throw new GeneratedFailed(`Cannot match menu "${key}" in ${parent.onlyInstance.id}, menu instance not found.`);
         } else {
-            return matches[0];
+            return matches[0] as unknown as Menu<T>;
         }
     }
-    function getMenuInstance<T extends Extension>(target: T, key: string): Menu<T> {
+    function getMenuInstance<T extends Extension>(target: T, key: keyof T): Menu<T> {
         const parent = OriginalState.getConstructor<typeof Extension>(target);
-        const menu = parent.getTempInstance()[key as keyof Extension] as Menu<T>;
+        const menu = parent.onlyInstance[key as keyof Extension] as Menu<T>;
         return menu;
     }
     export function RefuseReporters<T extends Extension & { [P in K]: Menu }, K extends keyof T>(target: T, propertyKey: K & string) {
@@ -534,10 +538,7 @@ export namespace MenuMode {
     }
     export function Readback<T extends Extension>(executor: ReadbackFunction<T>) {
         return function <K extends keyof T>(target: T, propertyKey: K & string) {
-            const parent = OriginalState.getConstructor<typeof Extension>(target);
-            const rawMenu = getMenuInstance(target, propertyKey);
-            if (!rawMenu.reactive)
-                throw new GeneratedFailed(`Cannot set readback of menu "${propertyKey}" in ${parent.getTempInstance().id}, menu is not reactive.`);
+            const rawMenu = matchMenu(target, propertyKey);
             rawMenu.name = propertyKey;
             rawMenu.readback = executor;
         }

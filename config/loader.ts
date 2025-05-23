@@ -3,9 +3,9 @@ import type { LoaderConfig } from "@framework/internal";
 import { Extensions } from "@framework/index";
 Extensions.justPlaceholder();
 const config: LoaderConfig = {
-    target: import("@src/extension"),
+    target: import("@samples/applepie"),
     errorCatches: [Error, ExtensionLoadError],
-    platform: ["TurboWarp"],
+    platform: ["GandiIDE"],
     mode: "debug"
 };
 export default config;

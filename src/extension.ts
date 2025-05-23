@@ -11,10 +11,13 @@ export default class MyExtension extends Extension {
             },
         }
     };
-    @BlockType.Reporter("返回[sth:menu(a,b,c)=c]")
+    @BlockType.Reporter("返回[sth:menu(a,b,c)=b]")
     returnSth({ sth }: { sth: string }) {
         return sth;
     }
+    @MenuMode.Readback((menu) => {
+        return menu.generated.sort(() => Random.float(-1, 1));
+    })
     @MenuMode.RefuseReporters
     @MenuMode.Reactive(true)
     apple = new Menu("苹果,智慧果,超凡子,apple,林檎");
