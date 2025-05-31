@@ -78,13 +78,12 @@ export type InputTypeCast = {
     angle: number;
     color: HexColorString;
     "hat-parameter": string;
-}
+};
 export type TranslatorStoredData = {
     [K in LanguageSupported]?: LanguageStored;
-}
+};
 export type LanguageSupported = "zh-cn" | "en";
-// export type PlatformSupported = "GandiIDE" | "TurboWarp";
-export type LanguageStored = { [key: string]: string; };
+export type LanguageStored = Record<string, string>;
 export type ArgumentPartType = "text" | "input";
 export type InputType = typeof AcceptedInputType[number];
 export const AcceptedInputType = ["string", "number", "bool", "menu", "angle", "color", "hat-parameter"] as const;
@@ -107,7 +106,7 @@ export interface StyleSetFunc<E extends HTMLElement> {
         (key: K, value: CSSStyleDeclaration[K]): ElementContext<E>;
     <K extends keyof FilterWritableKeys<CSSStyleDeclaration>>
         (key: K): CSSStyleDeclaration[K];
-};
+}
 export interface AttributeSetFunc<E extends HTMLElement> {
     <K extends keyof FilterWritableKeys<E>>
         (key: K, value: E[K]): ElementContext<E>;

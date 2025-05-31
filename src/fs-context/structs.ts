@@ -255,26 +255,49 @@ export class Translator<L extends LanguageSupported, D extends LanguageStored> {
     private stored: TranslatorStoredData = {};
     language: LanguageSupported = (window.Scratch ?? window.ScratchWaterBoxed)?.translate.language || 'zh-cn';
     defaultLanguage: L = 'zh-cn' as L;
+    useLegacy: boolean = false;
+    extension?: Extension;
     store<T extends LanguageSupported>(lang: T, data: D & LanguageStored) {
-        this.stored[lang] = data;
-    }
-    load(keyword: keyof D): string {
-        const currentStore = this.stored[this.language] as D;
-        if (currentStore) {
-            return currentStore[keyword] || this.unTranslatedText(keyword);
+        if (this.useLegacy) {
+            const dataAssigned: Record<string, LanguageStored> = {};
+            dataAssigned[lang] = data;
+            this.extension?.runtime?.translate.setup(dataAssigned);
         } else {
-            return this.unTranslatedText(keyword);
-        };
+            this.stored[lang] = data;
+        }
     }
-    unTranslatedText(keyword: keyof D) {
-        const currentStore = this.stored[this.defaultLanguage] as D;
-        return currentStore[keyword];
+    load(keyword: string & keyof D): string {
+        if (this.useLegacy) {
+            return this.extension?.runtime?.translate(keyword as string) || this.unTranslatedText(keyword);
+        } else {
+            const currentStore = this.stored[this.language] as D;
+            if (currentStore) {
+                return currentStore[keyword] || this.unTranslatedText(keyword);
+            } else {
+                return this.unTranslatedText(keyword);
+            };
+        }
+    }
+    unTranslatedText(keyword: string & keyof D): string {
+        if (this.useLegacy) {
+            return this.extension?.runtime?.translate(keyword as string) || keyword;
+        } else {
+            const currentStore = this.stored[this.defaultLanguage] as D;
+            return currentStore[keyword] || keyword;
+        }
+    }
+    useLegacyMode(extension: Extension) {
+        this.useLegacy = true;
+        this.extension = extension;
     }
     static create<T extends LanguageSupported, D extends LanguageStored>(lang: T, store: D): Translator<T, D> {
-        const result = new Translator<T, D>();
+        const result = new Translator<T, D>(lang, store);
         result.defaultLanguage = lang;
         result.store(lang, store);
         return result;
+    }
+    constructor(lang: L, store: D) {
+        Object.assign(this, Translator.create<L, D>(lang, store));
     }
 }
 export class DataStorer<T = any> {
