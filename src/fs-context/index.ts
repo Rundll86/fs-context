@@ -28,18 +28,11 @@ export namespace Extensions {
     function generateConstructor(extension: typeof Extension): new (runtime?: Scratch) => ExtensionPlain {
         const ext = extension.onlyInstance;
         function ExtensionConstructor(this: ExtensionPlain, runtime?: Scratch): ExtensionPlain {
-            console.log("Input runtime:", runtime);
-            const runtimeAssigned = Object.assign({},
-                window.ScratchWaterBoxed ?? window.Scratch ?? {},
-                runtime?.vm?.runtime ?? {},
-                { runtime },
-                runtime);
-            console.log("Assigned runtime:", runtimeAssigned);
-            ext.runtime = runtimeAssigned;
+            ext.runtime = runtime;
             if (!ext.allowSandboxed) {
                 ext.canvas = runtime?.renderer.canvas;
             };
-            ext.init(runtimeAssigned);
+            ext.init(runtime);
             ext.blocks.forEach(block => {
                 block.parts.forEach(arg => {
                     if (arg.inputType === "menu" && arg.value instanceof Menu) {
@@ -267,7 +260,7 @@ export namespace Extensions {
         const constructorPlain = extension;
         const constructorGenerated = generateConstructor(extension);
         const objectPlain = extension.onlyInstance;
-        const objectGenerated = new constructorGenerated(getScratch());
+        const objectGenerated = new constructorGenerated();
         const scratch = getScratch() as ScratchWaterBoxed;
         return {
             descriptors: {
