@@ -228,8 +228,6 @@ export default class MyExtension extends Extension {
 };
 ```
 
-</details>
-
 不仅体积大量减少的同时也利用了许多最新的语言特性，让源代码更已读。
 
 ## 完整文档
